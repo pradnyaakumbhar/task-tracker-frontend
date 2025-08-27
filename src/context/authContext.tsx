@@ -40,6 +40,11 @@ interface ApiError {
   message?: string;
 }
 
+interface ProfileResponse {
+  user: User;
+}
+
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Custom hook to use auth context
@@ -61,6 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const storedToken = localStorage.getItem('auth_token');
     if (storedToken) {
       setToken(storedToken);
+      fetchProfile(storedToken);
     } else {
       setLoading(false);
     }
@@ -130,6 +136,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(null);
     setUser(null);
   };
+
+  const fetchProfile = async (authToken: string): Promise<void> => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/profile`,
+        { headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+        }}
+      )
+
+      if (response) {
+        const data: ProfileResponse = await response.data;
+        setUser(data.user);
+    
+        
+      } 
+    } catch (error) {
+      console.error('Profile fetch error:', error);
+      localStorage.removeItem('auth_token');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Context value
   const value: AuthContextType = {

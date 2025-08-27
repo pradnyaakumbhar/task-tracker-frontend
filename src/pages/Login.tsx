@@ -65,7 +65,7 @@ const Login: React.FC = () => {
         <div 
           className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
           style={{
-            clipPath: 'polygon(65% 47%, 79% 48%, 91% 55%, 100% 63%, 100% 100%, 0 100%, 0 84%, 11% 68%, 24% 55%, 41% 50%)'
+            clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)'
           }}
         >
           {/* Background Decorations */}
