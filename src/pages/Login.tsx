@@ -39,7 +39,7 @@ const Login: React.FC = () => {
     try {
       await login(formState.email, formState.password);
       // Navigate after successful login
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
       updateFormState({ error: errorMessage });
