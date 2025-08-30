@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from "react";
 import axios from 'axios';
-import { useAuth } from './authContext'; // Update this path
+import { useAuth } from './authContext';
 
-// Types based on your API responses
 export interface User {
   id: string;
   name: string;
@@ -51,13 +50,13 @@ interface WorkspaceDetailsResponse {
 }
 
 export interface WorkspaceContextType {
-  // Basic workspace list
+  // workspace list
   workspaces: Workspace[];
   selectedWorkspace: Workspace | null;
   loading: boolean;
   error: string | null;
   
-  // Detailed workspace information
+  // workspace information
   workspaceDetails: WorkspaceDetails | null;
   detailsLoading: boolean;
   detailsError: string | null;
@@ -81,7 +80,6 @@ interface WorkspaceProviderProps {
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-// Custom hook to use workspace context
 export const useWorkspace = (): WorkspaceContextType => {
   const context = useContext(WorkspaceContext);
   if (context === undefined) {
@@ -91,25 +89,20 @@ export const useWorkspace = (): WorkspaceContextType => {
 };
 
 export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }) => {
-  // Basic workspace state
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Detailed workspace state
   const [workspaceDetails, setWorkspaceDetails] = useState<WorkspaceDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
 
   const { token, user } = useAuth();
 
-  // Fetch workspaces when user is authenticated
   useEffect(() => {
     if (token && user) {
       fetchWorkspaces();
     } else {
-      // Clear data when user logs out
       setWorkspaces([]);
       setSelectedWorkspace(null);
       setWorkspaceDetails(null);
@@ -118,14 +111,12 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
     }
   }, [token, user]);
 
-  // Set default selected workspace when workspaces are loaded
   useEffect(() => {
     if (workspaces.length > 0 && !selectedWorkspace) {
       setSelectedWorkspace(workspaces[0]);
     }
   }, [workspaces]);
 
-  // Auto-fetch details when selected workspace changes
   useEffect(() => {
     if (selectedWorkspace) {
       fetchWorkspaceDetails(selectedWorkspace.id);
@@ -194,40 +185,34 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
     setDetailsError(null);
   };
 
-  // Helper function to get workspace by number
+  // get workspace by number
   const getWorkspaceByNumber = (number: string): Workspace | undefined => {
     return workspaces.find(workspace => workspace.number === number);
   };
 
-  // Helper function to get workspace ID by number
+  // get workspace ID by number
   const getWorkspaceIdByNumber = (number: string): string | undefined => {
     const workspace = getWorkspaceByNumber(number);
     return workspace?.id;
   };
 
-  // Helper function to get space by number (from workspace details if available, otherwise from basic workspace)
+  // get space by number
   const getSpaceByNumber = (workspaceNumber: string, spaceNumber: string): Space | undefined => {
-    // First try to get from detailed workspace if it's the selected one
     if (workspaceDetails && workspaceDetails.number === workspaceNumber) {
       return workspaceDetails.spaces.find(space => space.spaceNumber === spaceNumber);
     }
-    
-    // Fallback to basic workspace data
     const workspace = getWorkspaceByNumber(workspaceNumber);
     if (!workspace) return undefined;
     return workspace.spaces.find(space => space.spaceNumber === spaceNumber);
   };
-
-  // Helper function to get space ID by number
+  // get space ID by number
   const getSpaceIdByNumber = (workspaceNumber: string, spaceNumber: string): string | undefined => {
     const space = getSpaceByNumber(workspaceNumber, spaceNumber);
     return space?.id;
   };
 
-  // Refresh workspaces (useful for manual refresh or after creating new workspace)
   const refreshWorkspaces = async (): Promise<void> => {
     await fetchWorkspaces();
-    // If we have a selected workspace, also refresh its details
     if (selectedWorkspace) {
       await fetchWorkspaceDetails(selectedWorkspace.id);
     }
@@ -239,24 +224,17 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({ children }
   };
 
   const value: WorkspaceContextType = {
-    // Basic workspace data
     workspaces,
     selectedWorkspace,
     loading,
     error,
-    
-    // Detailed workspace data
     workspaceDetails,
     detailsLoading,
     detailsError,
-    
-    // Actions
     setSelectedWorkspace: handleSetSelectedWorkspace,
     refreshWorkspaces,
     fetchWorkspaceDetails,
     clearWorkspaceDetails,
-    
-    // Helper functions
     getWorkspaceByNumber,
     getSpaceByNumber,
     getWorkspaceIdByNumber,
