@@ -34,7 +34,7 @@ const Topbar = () => {
       <div className="flex items-center gap-4">
         <SidebarTrigger />
         {/* search bar */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 max-w-lg">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Search tasks, spaces, or workspaces..."

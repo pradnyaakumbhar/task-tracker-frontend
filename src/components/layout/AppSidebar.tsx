@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ChevronDown, Plus, Hash, Users, Settings, Home } from "lucide-react";
+import { ChevronDown, Plus, Hash, Users, Home, Loader2, RefreshCw } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,44 +20,113 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-// Mock data - replace with API calls
-const mockWorkspaces = [
-  {
-    id: "1",
-    name: "Personal Projects",
-    spaces: [
-      { id: "1", name: "Development", taskCount: 12 },
-      { id: "2", name: "Design", taskCount: 8 },
-      { id: "3", name: "Marketing", taskCount: 5 },
-    ],
-  },
-  {
-    id: "2",
-    name: "Company Work",
-    spaces: [
-      { id: "4", name: "Frontend Team", taskCount: 15 },
-      { id: "5", name: "Backend Team", taskCount: 9 },
-      { id: "6", name: "QA Testing", taskCount: 7 },
-    ],
-  },
-];
+import { useWorkspace } from "@/context/workspaceContext"; // Update this path
 
 const AppSidebar = () => {
-  const [selectedWorkspace, setSelectedWorkspace] = useState(mockWorkspaces[0]);
+  const {
+    workspaces,
+    selectedWorkspace,
+    loading,
+    error,
+    workspaceDetails,
+    detailsLoading,
+    setSelectedWorkspace,
+    refreshWorkspaces,
+    getWorkspaceByNumber,
+  } = useWorkspace();
+
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const location = useLocation();
   const { workspaceId, spaceId } = useParams();
 
-  const isActive = (path: string) => location.pathname === path;
-  const isSpaceActive = (workspace: string, space: string) => 
-    workspaceId === workspace && spaceId === space;
+  // Sync selected workspace with URL params
+  useEffect(() => {
+    if (workspaceId && workspaces.length > 0) {
+      const workspace = getWorkspaceByNumber(workspaceId);
+      if (workspace && workspace !== selectedWorkspace) {
+        setSelectedWorkspace(workspace);
+      }
+    }
+  }, [workspaceId, workspaces, selectedWorkspace, getWorkspaceByNumber, setSelectedWorkspace]);
 
-  const handleSpaceClick = (workspaceId: string, spaceId: string) => {
-    navigate(`/${workspaceId}/${spaceId}`);
+  const isActive = (path: string) => location.pathname === path;
+  
+  const isSpaceActive = (workspaceNumber: string, spaceNumber: string) => 
+    workspaceId === workspaceNumber && spaceId === spaceNumber;
+
+  const handleSpaceClick = (workspaceNumber: string, spaceNumber: string) => {
+    navigate(`/${workspaceNumber}/${spaceNumber}`);
   };
+
+  const handleWorkspaceSelect = (workspace: typeof selectedWorkspace) => {
+    if (!workspace) return;
+    
+    setSelectedWorkspace(workspace);
+    // Optionally navigate to first space of selected workspace
+    if (workspace.spaces.length > 0) {
+      navigate(`/${workspace.number}/${workspace.spaces[0].spaceNumber}`);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <Sidebar className="border-r bg-sidebar border-sidebar-border">
+        <SidebarContent className="p-4 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            {!collapsed && <span className="text-sm text-muted-foreground">Loading workspaces...</span>}
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Sidebar className="border-r bg-sidebar border-sidebar-border">
+        <SidebarContent className="p-4">
+          <div className="text-center">
+            <p className="text-sm text-destructive mb-3">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshWorkspaces}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              {!collapsed && "Retry"}
+            </Button>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+
+  // No workspaces state
+  if (!loading && workspaces.length === 0) {
+    return (
+      <Sidebar className="border-r bg-sidebar border-sidebar-border">
+        <SidebarContent className="p-4">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-3">No workspaces found</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshWorkspaces}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              {!collapsed && "Refresh"}
+            </Button>
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   return (
     <Sidebar className="border-r bg-sidebar border-sidebar-border">
@@ -72,7 +141,7 @@ const AppSidebar = () => {
                 <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
                   <Users className="h-3 w-3 text-primary-foreground" />
                 </div>
-                {!collapsed && (
+                {!collapsed && selectedWorkspace && (
                   <span className="font-medium truncate">{selectedWorkspace.name}</span>
                 )}
               </div>
@@ -80,16 +149,21 @@ const AppSidebar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-64" align="start">
-            {mockWorkspaces.map((workspace) => (
+            {workspaces.map((workspace) => (
               <DropdownMenuItem
                 key={workspace.id}
-                onClick={() => setSelectedWorkspace(workspace)}
+                onClick={() => handleWorkspaceSelect(workspace)}
                 className="flex items-center gap-2 p-3"
               >
                 <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
                   <Users className="h-3 w-3 text-primary-foreground" />
                 </div>
-                <span>{workspace.name}</span>
+                <div className="flex flex-col">
+                  <span>{workspace.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {workspace._count.spaces} spaces • {workspace._count.members} members
+                  </span>
+                </div>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -118,56 +192,69 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2 flex items-center justify-between">
-            <span>Spaces</span>
-            {!collapsed && (
-              <Button variant="ghost" size="icon" className="h-4 w-4">
-                <Plus className="h-3 w-3" />
-              </Button>
-            )}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {selectedWorkspace.spaces.map((space) => (
-                <SidebarMenuItem key={space.id}>
-                  <SidebarMenuButton
-                    asChild
-                    className={
-                      isSpaceActive(selectedWorkspace.id, space.id)
-                        ? "bg-sidebar-active text-white"
-                        : "hover:bg-sidebar-hover"
-                    }
-                  >
-                    <button
-                      onClick={() => handleSpaceClick(selectedWorkspace.id, space.id)}
-                      className="flex items-center gap-2 w-full"
-                    >
-                      <Hash className="h-4 w-4" />
-                      {!collapsed && (
-                        <div className="flex items-center justify-between w-full">
-                          <span className="truncate">{space.name}</span>
-                          <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                            {space.taskCount}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {selectedWorkspace && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2 flex items-center justify-between">
+              <span>Spaces</span>
+              {/* {!collapsed && (
+                <Button variant="ghost" size="icon" className="h-4 w-4">
+                  <Plus className="h-3 w-3" />
+                </Button>
+              )} */}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              {detailsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {!collapsed && <span className="ml-2 text-sm text-muted-foreground">Loading spaces...</span>}
+                </div>
+              ) : (
+                <SidebarMenu>
+                  {(workspaceDetails || selectedWorkspace).spaces?.map((space) => (
+                    <SidebarMenuItem key={space.id}>
+                      <SidebarMenuButton
+                        asChild
+                        className={
+                          isSpaceActive(selectedWorkspace.number, space.spaceNumber)
+                            ? "bg-sidebar-active text-white"
+                            : "hover:bg-sidebar-hover"
+                        }
+                      >
+                        <button
+                          onClick={() => handleSpaceClick(selectedWorkspace.number, space.spaceNumber)}
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <Hash className="h-4 w-4" />
+                          {!collapsed && (
+                            <div className="flex items-center justify-between w-full">
+                              <span className="truncate">{space.name}</span>
+                              <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                                {space._count.tasks}
+                              </span>
+                            </div>
+                          )}
+                        </button>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )) || (
+                    <div className="text-center py-4">
+                      <span className="text-sm text-muted-foreground">No spaces found</span>
+                    </div>
+                  )}
+                </SidebarMenu>
+              )}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild >
                   <button className="flex items-center gap-2 w-full">
-                    <Settings className="h-4 w-4" />
-                    {!collapsed && <span>Settings</span>}
+                  <Plus className="h-6 w-6" />
+                  <span>Create Space</span>
                   </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
