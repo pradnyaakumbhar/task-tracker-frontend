@@ -1,159 +1,48 @@
-import { useParams } from "react-router-dom";
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { 
-    Plus, 
-    Search, 
-    Filter, 
-    Settings,
-    MessageSquare,
-    Calendar,
-    MoreHorizontal,
-    Edit,
-    Trash2
-  } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Calendar, 
+  CheckCircle2, 
+  Clock, 
+  Users, 
+  TrendingUp, 
+  Plus,
+  BarChart3
+} from "lucide-react";
 
 const Workspace = () => {
-  const { workspaceId, spaceId } = useParams();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-
   // Mock data - replace with API calls
-  const spaceData: Record<string, Record<string, { name: string; description: string }>> = {
-    "1": {
-      "1": { name: "Development", description: "Frontend and backend development tasks" },
-      "2": { name: "Design", description: "UI/UX design and prototyping" },
-      "3": { name: "Marketing", description: "Marketing campaigns and content" },
-    },
-    "2": {
-      "4": { name: "Frontend Team", description: "React and TypeScript development" },
-      "5": { name: "Backend Team", description: "API and database development" },
-      "6": { name: "QA Testing", description: "Testing and quality assurance" },
-    },
-  };
-
-  const mockTasks = [
-    {
-      id: 1,
-      title: "Implement user authentication system",
-      description: "Create login, register, and password reset functionality",
-      status: "IN_PROGRESS",
-      priority: "High",
-      reporter: "Admin User",
-      dueDate: "2024-01-15",
-      tags: ["Frontend", "Security"],
-      comments: 3,
-    },
-    {
-        id: 2,
-        title: "Design homepage layout",
-        description: "Create wireframes and mockups for the landing page",
-        status: "TODO",
-        priority: "Medium",
-        assignee: "Jane Smith",
-        reporter: "Product Manager",
-        dueDate: "2024-01-12",
-        tags: ["Design", "UI"],
-        comments: 1,
-      },
-      {
-        id: 3,
-        title: "Write API documentation",
-        description: "Document all REST API endpoints with examples",
-        status: "IN_REVIEW",
-        priority: "Low",
-        assignee: "Mike Johnson",
-        reporter: "Tech Lead",
-        dueDate: "2024-01-20",
-        tags: ["Documentation", "Backend"],
-        comments: 5,
-      },
-      {
-        id: 4,
-        title: "Setup CI/CD pipeline",
-        description: "Configure automated testing and deployment",
-        status: "DONE",
-        priority: "Urgent",
-        assignee: "Sarah Wilson",
-        reporter: "DevOps Lead",
-        dueDate: "2024-01-10",
-        tags: ["DevOps", "Automation"],
-        comments: 8,
-      },
+  const stats = [
+    { title: "Total Tasks", value: "234", icon: CheckCircle2, change: "+12%" },
+    { title: "In Progress", value: "48", icon: Clock, change: "+8%" },
+    { title: "Completed Today", value: "16", icon: TrendingUp, change: "+24%" },
+    { title: "Team Members", value: "12", icon: Users, change: "0%" },
   ];
 
-  const currentSpace = workspaceId && spaceId ? spaceData[workspaceId]?.[spaceId] : null;
+  const recentTasks = [
+    { id: 1, title: "Design homepage mockup", space: "Design", priority: "High", status: "In Progress" },
+    { id: 2, title: "Implement user authentication", space: "Development", priority: "High", status: "Todo" },
+    { id: 3, title: "Write API documentation", space: "Development", priority: "Medium", status: "In Progress" },
+    { id: 4, title: "Create marketing campaign", space: "Marketing", priority: "Low", status: "Review" },
+  ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-        case "TODO": return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-        case "IN_PROGRESS": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-        case "IN_REVIEW": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-        case "DONE": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-        case "CANCELLED": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-        default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-      }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Urgent": return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "High": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case "Medium": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "Low": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "TODO": return "To Do";
-      case "IN_PROGRESS": return "In Progress";
-      case "IN_REVIEW": return "In Review";
-      case "DONE": return "Done";
-      case "CANCELLED": return "Cancelled";
-      default: return status;
-    }
-  };
-
-  const filteredTasks = mockTasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const workspaceProgress = [
+    { name: "Personal Projects", progress: 75, tasks: 45 },
+    { name: "Company Work", progress: 60, tasks: 78 },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{currentSpace?.name}</h1>
-          <p className="text-muted-foreground">{currentSpace?.description}</p>
+          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Welcome back! Here's your productivity overview.
+          </p>
         </div>
         <Button variant="default">
           <Plus className="h-4 w-4 mr-2" />
@@ -161,167 +50,119 @@ const Workspace = () => {
         </Button>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col md:flex-row gap-4 flex-1">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search tasks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <Card key={index} className="shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </p>
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-xs text-green-600 flex items-center mt-1">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    {stat.change}
+                  </p>
+                </div>
+                <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <stat.icon className="h-6 w-6 text-primary" />
+                </div>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="TODO">To Do</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                  <SelectItem value="DONE">Done</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Tasks */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5" />
+              Recent Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentTasks.map((task) => (
+                <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="space-y-1">
+                    <p className="font-medium">{task.title}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {task.space}
+                      </Badge>
+                      <Badge 
+                        variant={task.priority === 'High' ? 'destructive' : task.priority === 'Medium' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {task.priority}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Badge variant="outline">{task.status}</Badge>
+                </div>
+              ))}
             </div>
-            <Button variant="gradient" className="shrink-0">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
+          </CardContent>
+        </Card>
+
+        {/* Workspace Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Workspace Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {workspaceProgress.map((workspace, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">{workspace.name}</p>
+                    <span className="text-sm text-muted-foreground">
+                      {workspace.tasks} tasks
+                    </span>
+                  </div>
+                  <Progress value={workspace.progress} className="h-2" />
+                  <p className="text-xs text-muted-foreground">
+                    {workspace.progress}% completed
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+              <Plus className="h-6 w-6" />
+              <span>Create Space</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+              <Users className="h-6 w-6" />
+              <span>Invite Team</span>
+            </Button>
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+              <BarChart3 className="h-6 w-6" />
+              <span>View Reports</span>
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Tasks Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b bg-muted/50">
-                <TableHead className="font-semibold">Title</TableHead>
-                <TableHead className="font-semibold">Description</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Priority</TableHead>
-                <TableHead className="font-semibold">Assignee</TableHead>
-                <TableHead className="font-semibold">Reporter</TableHead>
-                <TableHead className="font-semibold">Due Date</TableHead>
-                <TableHead className="font-semibold">Tags</TableHead>
-                <TableHead className="font-semibold">Comments</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell className="max-w-[300px] truncate text-muted-foreground">
-                    {task.description}
-                  </TableCell>
-                  <TableCell>
-                    <Select defaultValue={task.status}>
-                      <SelectTrigger className="w-[120px] h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TODO">To Do</SelectItem>
-                        <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                        <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                        <SelectItem value="DONE">Done</SelectItem>
-                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select defaultValue={task.priority}>
-                      <SelectTrigger className="w-[100px] h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Urgent">Urgent</SelectItem>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-sm">{task.assignee}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{task.reporter}</TableCell>
-                  <TableCell className="text-sm">
-                    <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                      {task.dueDate}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {task.tags.slice(0, 2).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs px-1 py-0">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {task.tags.length > 2 && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">
-                          +{task.tags.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3" />
-                      {task.comments}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Task
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Task
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {filteredTasks.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-          <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tasks found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm || statusFilter !== "all" 
-                ? "Try adjusting your search or filters"
-                : "Get started by creating your first task"
-              }
-            </p>
-            <Button variant="default">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
