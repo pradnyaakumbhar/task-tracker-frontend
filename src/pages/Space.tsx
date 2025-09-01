@@ -298,10 +298,10 @@ const Space = () => {
           <p className="text-muted-foreground">{currentSpace?.description || ''}</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setIsTaskDialogOpen(true)}>
+          {/* <Button onClick={() => setIsTaskDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Task
-          </Button>
+          </Button> */}
           <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Update Space

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Search, Bell, Settings, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from 'react'
+import { Search, Bell, Settings, Plus } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,27 +10,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAuth } from "@/context/authContext";
-import CreateWorkspaceDialog from "@/components/topbar/CreateWorkspaceDialog";
+} from '@/components/ui/dropdown-menu'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { useAuth } from '@/context/authContext'
+import CreateWorkspaceDialog from '@/components/topbar/CreateWorkspaceDialog'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const Topbar = () => {
-  const { user, logout } = useAuth();
-  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
+  const { user, logout } = useAuth()
+  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false)
 
   const handleLogout = () => {
-    logout();
-  };
+    logout()
+  }
 
   const getUserInitials = (name: string) => {
     return name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   return (
     <>
@@ -48,6 +49,7 @@ const Topbar = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {/* notification bell */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -59,7 +61,10 @@ const Topbar = () => {
           {/* user profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full"
+              >
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="/placeholder.svg" alt="Profile" />
                   <AvatarFallback className="bg-primary text-primary-foreground">
@@ -90,7 +95,10 @@ const Topbar = () => {
                 <span>Create new workspace</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={handleLogout}
+              >
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -99,12 +107,12 @@ const Topbar = () => {
       </header>
 
       {/* Create Workspace Dialog */}
-      <CreateWorkspaceDialog 
+      <CreateWorkspaceDialog
         open={isCreateWorkspaceOpen}
         onOpenChange={setIsCreateWorkspaceOpen}
       />
     </>
-  );
-};
+  )
+}
 
-export default Topbar;
+export default Topbar
