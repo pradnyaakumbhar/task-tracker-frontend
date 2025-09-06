@@ -1,5 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Workspace, Login, Register, Space, NotFound } from './pages'
+import {
+  Workspace,
+  Login,
+  Register,
+  Space,
+  NotFound,
+  Invitation,
+} from './pages'
 import DashboardLayout from './components/layout/DashboardLayout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
@@ -32,6 +39,7 @@ function App() {
                 </PublicRoute>
               }
             />
+            <Route path="/invitation/:invitationId" element={<Invitation />} />
             <Route
               path="/"
               element={
