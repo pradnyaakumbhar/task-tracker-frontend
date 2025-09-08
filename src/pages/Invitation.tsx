@@ -1,53 +1,11 @@
-// import React from 'react'
-// import { Routes, Route, useParams, useNavigate } from 'react-router-dom'
-// import { useAuth } from '@/context/authContext'
-// import InvitationPage from '@/components/invitation/InvitationPage'
-
-// // Route component for invitation page
-// const Invitation: React.FC = () => {
-//   const { invitationId } = useParams<{ invitationId: string }>()
-//   const navigate = useNavigate()
-//   const { user, token } = useAuth()
-
-//   if (!invitationId) {
-//     navigate('/login')
-//     return null
-//   }
-
-//   return (
-//     <InvitationPage
-//       invitationId={invitationId}
-//       user={user}
-//       token={token}
-//       onNavigate={(path, state) => {
-//         if (state) {
-//           navigate(path, state)
-//         } else {
-//           navigate(path)
-//         }
-//       }}
-//     />
-//   )
-// }
-
-// export default Invitation
-
 import React, { useEffect } from 'react'
-import {
-  Routes,
-  Route,
-  useParams,
-  useNavigate,
-  useLocation,
-} from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/authContext'
 import InvitationPage from '@/components/invitation/InvitationPage'
 
-// Route component for invitation page
 const Invitation: React.FC = () => {
   const { invitationId } = useParams<{ invitationId: string }>()
   const navigate = useNavigate()
-  const location = useLocation()
   const { user, token, loading } = useAuth()
 
   useEffect(() => {
@@ -56,7 +14,6 @@ const Invitation: React.FC = () => {
       return
     }
 
-    // If not loading and not authenticated, redirect to login with invitation state
     if (!loading && !token) {
       navigate('/login', {
         state: {
@@ -80,12 +37,10 @@ const Invitation: React.FC = () => {
     )
   }
 
-  // If no invitation ID, redirect to login
+  // If no invitation ID or token, redirect to login
   if (!invitationId) {
-    return null // useEffect will handle navigation
+    return null
   }
-
-  // If not authenticated, redirect will happen in useEffect
   if (!token) {
     return null
   }

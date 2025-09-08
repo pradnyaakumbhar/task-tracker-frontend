@@ -415,6 +415,7 @@ import {
   AlertCircle,
   ExternalLink,
   Shield,
+  ArrowRight,
 } from 'lucide-react'
 
 interface InvitationData {
@@ -578,7 +579,11 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
       onShowLogin()
     } else {
       onNavigate?.('/login', {
-        state: { returnTo: `/invitation/${invitationId}` },
+        state: {
+          returnTo: `/invitation/${invitationId}`,
+          invitationId,
+          email: invitation?.email,
+        },
       })
     }
   }
@@ -590,6 +595,7 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
       onNavigate?.('/register', {
         state: {
           returnTo: `/invitation/${invitationId}`,
+          invitationId,
           email: invitation?.email,
         },
       })
@@ -659,6 +665,19 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
                 <Users className="h-4 w-4 mr-2" />
                 Create Account & Join Workspace
               </Button>
+
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Already have an account?</span>
+                <Button
+                  variant="link"
+                  onClick={handleLogin}
+                  className="p-0 h-auto text-primary"
+                >
+                  Sign in instead
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+
               <p className="text-xs text-muted-foreground">
                 By creating an account, you'll be able to collaborate with your
                 team

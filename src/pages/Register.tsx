@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import type { KeyboardEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { useAuth } from '../context/authContext';
+import React, { useState, useEffect } from 'react'
+import type { KeyboardEvent } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Users } from 'lucide-react'
+import { useAuth } from '../context/authContext'
 
 interface RegisterFormState {
-  name: string;
-  email: string;
-  password: string;
-  showPassword: boolean;
-  error: string;
-  loading: boolean;
+  name: string
+  email: string
+  password: string
+  showPassword: boolean
+  error: string
+  loading: boolean
 }
 
 const Register: React.FC = () => {
@@ -21,55 +21,133 @@ const Register: React.FC = () => {
     showPassword: false,
     error: '',
     loading: false,
-  });
+  })
 
-  const { register } = useAuth();
+  const { register, user, token } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Get invitation state from navigation
+  const invitationId = location.state?.invitationId
+  const returnTo = location.state?.returnTo
+  const prefilledEmail = location.state?.email
 
   const updateFormState = (updates: Partial<RegisterFormState>): void => {
-    setFormState(prev => ({ ...prev, ...updates }));
-  };
+    setFormState((prev) => ({ ...prev, ...updates }))
+  }
+
+  useEffect(() => {
+    // Prefill email if provided from invitation
+    if (prefilledEmail) {
+      updateFormState({ email: prefilledEmail })
+    }
+  }, [prefilledEmail])
+
+  useEffect(() => {
+    // If user is already authenticated and there's an invitation, redirect to process it
+    if (user && token && invitationId) {
+      navigate(`/invitation/${invitationId}`)
+    } else if (user && token) {
+      navigate(returnTo || '/')
+    }
+  }, [user, token, invitationId, returnTo, navigate])
 
   const handleSubmit = async (): Promise<void> => {
     if (!formState.name || !formState.email || !formState.password) {
-      updateFormState({ error: 'Please fill in all fields' });
-      return;
+      updateFormState({ error: 'Please fill in all fields' })
+      return
     }
 
     if (formState.password.length < 6) {
-      updateFormState({ error: 'Password must be at least 6 characters long' });
-      return;
+      updateFormState({ error: 'Password must be at least 6 characters long' })
+      return
     }
 
-    updateFormState({ error: '', loading: true });
+    updateFormState({ error: '', loading: true })
 
     try {
-      await register(formState.name, formState.email, formState.password);
+      // If there's an invitation, use the enhanced registration endpoint
+      if (invitationId) {
+        const response = await fetch(
+          'http://localhost:3000/api/auth/registerWithInvitation',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: formState.name,
+              email: formState.email,
+              password: formState.password,
+              invitationId,
+            }),
+          }
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          // Handle specific error cases
+          if (data.action === 'LOGIN_REQUIRED') {
+            // User already exists, redirect to login with invitation context
+            navigate('/login', {
+              state: {
+                returnTo: invitationId
+                  ? `/invitation/${invitationId}`
+                  : returnTo,
+                invitationId: data.invitationId || invitationId,
+                email: formState.email,
+                message: data.message,
+              },
+            })
+            return
+          }
+
+          updateFormState({ error: data.error || 'Registration failed' })
+          return
+        }
+
+        // Store token in localStorage
+        localStorage.setItem('auth_token', data.token)
+
+        // If invitation was auto-accepted, redirect to workspace
+        if (data.invitationAccepted && data.workspaceNumber) {
+          navigate(`/${data.workspaceNumber}`)
+        } else {
+          // Normal registration flow
+          await register(formState.name, formState.email, formState.password)
+        }
+      } else {
+        // Normal registration without invitation
+        await register(formState.name, formState.email, formState.password)
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
-      updateFormState({ error: errorMessage });
+      const errorMessage =
+        err instanceof Error ? err.message : 'Registration failed'
+      updateFormState({ error: errorMessage })
     } finally {
-      updateFormState({ loading: false });
+      updateFormState({ loading: false })
     }
-  };
+  }
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
-      handleSubmit();
+      handleSubmit()
     }
-  };
+  }
 
   const togglePasswordVisibility = (): void => {
-    updateFormState({ showPassword: !formState.showPassword });
-  };
+    updateFormState({ showPassword: !formState.showPassword })
+  }
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Diagonal Gradient Background - Lower Part */}
       <div className="absolute inset-0">
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
           style={{
-            clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)'
+            clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)',
           }}
         >
           {/* Background Decorations */}
@@ -80,10 +158,11 @@ const Register: React.FC = () => {
         </div>
 
         {/* Mobile diagonal */}
-        <div 
+        <div
           className="md:hidden absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
           style={{
-            clipPath: 'polygon(65% 47%, 79% 48%, 91% 55%, 100% 63%, 100% 100%, 0 100%, 0 84%, 11% 68%, 24% 55%, 41% 50%)'
+            clipPath:
+              'polygon(65% 47%, 79% 48%, 91% 55%, 100% 63%, 100% 100%, 0 100%, 0 84%, 11% 68%, 24% 55%, 41% 50%)',
           }}
         >
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32 translate-y-32"></div>
@@ -97,7 +176,14 @@ const Register: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">Create Account</h1>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                {invitationId ? 'Join Workspace' : 'Create Account'}
+              </h1>
+              {invitationId && (
+                <p className="text-gray-600 text-sm">
+                  Create your account to join the workspace
+                </p>
+              )}
             </div>
 
             {/* Error Message */}
@@ -110,7 +196,10 @@ const Register: React.FC = () => {
             {/* Form */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Name
                 </label>
                 <div className="relative">
@@ -129,7 +218,10 @@ const Register: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email
                 </label>
                 <div className="relative">
@@ -142,13 +234,21 @@ const Register: React.FC = () => {
                     onKeyPress={handleKeyPress}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
                     placeholder="Enter your email"
-                    disabled={formState.loading}
+                    disabled={formState.loading || !!prefilledEmail}
                   />
                 </div>
+                {prefilledEmail && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Email pre-filled from invitation
+                  </p>
+                )}
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -157,7 +257,9 @@ const Register: React.FC = () => {
                     id="password"
                     type={formState.showPassword ? 'text' : 'password'}
                     value={formState.password}
-                    onChange={(e) => updateFormState({ password: e.target.value })}
+                    onChange={(e) =>
+                      updateFormState({ password: e.target.value })
+                    }
                     onKeyPress={handleKeyPress}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
                     placeholder="Create a password"
@@ -169,7 +271,11 @@ const Register: React.FC = () => {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     disabled={formState.loading}
                   >
-                    {formState.showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {formState.showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -184,8 +290,17 @@ const Register: React.FC = () => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Create Account</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {invitationId ? (
+                      <>
+                        <Users className="w-5 h-5" />
+                        <span>Create Account & Join Workspace</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Create Account</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </>
                 )}
               </button>
@@ -195,20 +310,28 @@ const Register: React.FC = () => {
             <div className="mt-8 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="text-purple-600 hover:text-purple-800 font-medium transition-colors"
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/login', {
+                      state: {
+                        returnTo,
+                        invitationId,
+                        email: prefilledEmail,
+                      },
+                    })
+                  }}
+                  className="text-purple-600 hover:text-purple-800 font-medium transition-colors cursor-pointer"
                 >
                   Sign in
-                </Link>
+                </button>
               </p>
             </div>
-
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register
