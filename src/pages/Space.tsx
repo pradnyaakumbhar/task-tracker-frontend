@@ -25,6 +25,7 @@ import {
   RefreshCw,
   X,
   Eye,
+  GitBranch, // Added for version display
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -71,6 +72,7 @@ interface Task {
   createdAt: string
   updatedAt: string
   taskNumber?: string
+  version?: number // Added version field
 }
 
 interface TaskDetails extends Task {
@@ -117,6 +119,12 @@ const Space = () => {
   const [editingTask, setEditingTask] = useState<TaskDetails | null>(null)
   const [taskDetailsLoading, setTaskDetailsLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
+
+  // Version control states
+  const [isTaskHistoryOpen, setIsTaskHistoryOpen] = useState(false)
+  const [selectedTaskForHistory, setSelectedTaskForHistory] = useState<
+    string | null
+  >(null)
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('')
@@ -216,6 +224,7 @@ const Space = () => {
         tags: updateData.tags,
         assigneeId: updateData.assignee?.id || null,
         reporterId: updateData.reporter?.id,
+        // No updateReason field as requested
       }
 
       const response = await fetch(
@@ -307,9 +316,20 @@ const Space = () => {
   }
 
   // ==================== EVENT HANDLERS ====================
+
+  // Updated to open task history instead of task details
   const handleViewTask = async (task: Task) => {
-    await fetchTaskDetails(task.id)
-    setIsTaskDetailsOpen(true)
+    setSelectedTaskForHistory(task.id)
+    setIsTaskHistoryOpen(true)
+  }
+
+  // New handler for when task is updated from version control
+  const handleTaskUpdatedFromHistory = async () => {
+    await fetchTasks() // Refresh the main task list
+    if (selectedTask) {
+      // Refresh the selected task details if viewing
+      await fetchTaskDetails(selectedTask.id)
+    }
   }
 
   const handleEditTask = async (task: Task) => {
@@ -605,8 +625,13 @@ const Space = () => {
         onSpaceDeleted={handleSpaceDeleted}
       />
 
-      {/* REFACTORED DIALOG COMPONENTS */}
-      <TaskHistory />
+      {/* VERSION CONTROL TASK HISTORY */}
+      <TaskHistory
+        isOpen={isTaskHistoryOpen}
+        onOpenChange={setIsTaskHistoryOpen}
+        taskId={selectedTaskForHistory}
+        onTaskUpdated={handleTaskUpdatedFromHistory}
+      />
 
       <EditTask
         isOpen={isEditTaskOpen}
@@ -792,6 +817,7 @@ const Space = () => {
                 <TableHead className="font-semibold">Due Date</TableHead>
                 <TableHead className="font-semibold">Tags</TableHead>
                 <TableHead className="font-semibold">Comment</TableHead>
+                <TableHead className="font-semibold">Version</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -857,6 +883,15 @@ const Space = () => {
                       </span>
                     )}
                   </TableCell>
+                  {/* Version column */}
+                  <TableCell className="text-sm">
+                    <div className="flex items-center gap-1">
+                      <GitBranch className="h-3 w-3 text-blue-500" />
+                      <span className="font-mono text-blue-600">
+                        v{task.version || 1}
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -894,7 +929,7 @@ const Space = () => {
 
               {/* Quick Add Task Row */}
               <TableRow className="border-t-2 border-dashed">
-                <TableCell colSpan={10}>
+                <TableCell colSpan={11}>
                   <div className="flex items-center gap-2 w-full py-2">
                     <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span
