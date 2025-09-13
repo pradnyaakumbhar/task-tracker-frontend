@@ -92,7 +92,7 @@ type WorkspaceSpace = {
 }
 
 const Space = () => {
-  const { workspaceNumber, spaceId } = useParams()
+  const { workspaceNumber, spaceNumber } = useParams()
   const navigate = useNavigate()
   const { selectedWorkspace, workspaceDetails, refreshWorkspaces } =
     useWorkspace()
@@ -126,8 +126,12 @@ const Space = () => {
   const [dueDateFilter, setDueDateFilter] = useState('all')
 
   const currentSpace: WorkspaceSpace | undefined =
-    workspaceDetails?.spaces?.find((space) => space.spaceNumber === spaceId) ||
-    selectedWorkspace?.spaces?.find((space) => space.spaceNumber === spaceId)
+    workspaceDetails?.spaces?.find(
+      (space) => space.spaceNumber === spaceNumber
+    ) ||
+    selectedWorkspace?.spaces?.find(
+      (space) => space.spaceNumber === spaceNumber
+    )
 
   useEffect(() => {
     fetchTasks()

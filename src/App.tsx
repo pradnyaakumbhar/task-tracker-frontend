@@ -50,7 +50,7 @@ function App() {
             >
               <Route index element={<Workspace />} />
               <Route path=":workspaceNumber" element={<Workspace />} />
-              <Route path=":workspaceNumber/:spaceId" element={<Space />} />
+              <Route path=":workspaceNumber/:spaceNumber" element={<Space />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -25,7 +25,6 @@ const Login: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Get invitation state from navigation
   const invitationId = location.state?.invitationId
   const returnTo = location.state?.returnTo
   const prefilledEmail = location.state?.email
@@ -36,18 +35,15 @@ const Login: React.FC = () => {
   }
 
   useEffect(() => {
-    // Prefill email if provided from invitation
     if (prefilledEmail) {
       updateFormState({ email: prefilledEmail })
     }
   }, [prefilledEmail])
 
   useEffect(() => {
-    // If user is already authenticated and there's an invitation, redirect to process it
     if (user && token && invitationId) {
       navigate(`/invitation/${invitationId}`)
     } else if (user && token) {
-      // Normal redirect after login
       navigate(returnTo || '/')
     }
   }, [user, token, invitationId, returnTo, navigate])
@@ -61,8 +57,19 @@ const Login: React.FC = () => {
     updateFormState({ error: '', loading: true })
 
     try {
-      await login(formState.email, formState.password)
-      // Navigation will be handled by useEffect above
+      const result = await login(
+        formState.email,
+        formState.password,
+        invitationId
+      )
+
+      if (
+        result.success &&
+        result.invitationAccepted &&
+        result.workspaceNumber
+      ) {
+        navigate(`/${result.workspaceNumber}`)
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed'
       updateFormState({ error: errorMessage })
@@ -83,39 +90,19 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
-      {/* Diagonal Gradient Background - Lower Part */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
-          style={{
-            clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)',
-          }}
+          style={{ clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)' }}
         >
-          {/* Background Decorations */}
           <div className="absolute top-1/2 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full translate-x-48 translate-y-32"></div>
-          <div className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-white bg-opacity-5 rounded-full"></div>
-          <div className="absolute bottom-1/4 right-1/3 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
-        </div>
-
-        {/* Mobile diagonal */}
-        <div
-          className="md:hidden absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
-          style={{
-            clipPath:
-              'polygon(65% 47%, 79% 48%, 91% 55%, 100% 63%, 100% 100%, 0 100%, 0 84%, 11% 68%, 24% 55%, 41% 50%)',
-          }}
-        >
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32 translate-y-32"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full translate-x-32 translate-y-32"></div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-            {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-800 mb-2">
                 Welcome back!
@@ -132,14 +119,12 @@ const Login: React.FC = () => {
               )}
             </div>
 
-            {/* Error Message */}
             {formState.error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                 {formState.error}
               </div>
             )}
 
-            {/* Form */}
             <div className="space-y-4">
               <div>
                 <label
@@ -222,14 +207,15 @@ const Login: React.FC = () => {
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>Log In</span>
+                    <span>
+                      {invitationId ? 'Sign In & Join Workspace' : 'Log In'}
+                    </span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
             </div>
 
-            {/* Sign Up Link */}
             <div className="mt-8 text-center">
               <p className="text-gray-600">
                 Don't have an account?{' '}
@@ -237,11 +223,7 @@ const Login: React.FC = () => {
                   type="button"
                   onClick={() => {
                     navigate('/register', {
-                      state: {
-                        returnTo,
-                        invitationId,
-                        email: prefilledEmail,
-                      },
+                      state: { returnTo, invitationId, email: prefilledEmail },
                     })
                   }}
                   className="text-purple-600 hover:text-purple-800 font-medium transition-colors cursor-pointer"

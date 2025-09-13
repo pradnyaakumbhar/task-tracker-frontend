@@ -27,7 +27,6 @@ const Register: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Get invitation state from navigation
   const invitationId = location.state?.invitationId
   const returnTo = location.state?.returnTo
   const prefilledEmail = location.state?.email
@@ -37,14 +36,12 @@ const Register: React.FC = () => {
   }
 
   useEffect(() => {
-    // Prefill email if provided from invitation
     if (prefilledEmail) {
       updateFormState({ email: prefilledEmail })
     }
   }, [prefilledEmail])
 
   useEffect(() => {
-    // If user is already authenticated and there's an invitation, redirect to process it
     if (user && token && invitationId) {
       navigate(`/invitation/${invitationId}`)
     } else if (user && token) {
@@ -58,72 +55,48 @@ const Register: React.FC = () => {
       return
     }
 
-    if (formState.password.length < 6) {
-      updateFormState({ error: 'Password must be at least 6 characters long' })
+    if (formState.password.length < 8) {
+      updateFormState({ error: 'Password must be at least 8 characters long' })
       return
     }
 
     updateFormState({ error: '', loading: true })
 
     try {
-      // If there's an invitation, use the enhanced registration endpoint
-      if (invitationId) {
-        const response = await fetch(
-          'http://localhost:3000/api/auth/registerWithInvitation',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              name: formState.name,
-              email: formState.email,
-              password: formState.password,
-              invitationId,
-            }),
-          }
-        )
+      const result = await register(
+        formState.name,
+        formState.email,
+        formState.password,
+        invitationId
+      )
 
-        const data = await response.json()
-
-        if (!response.ok) {
-          // Handle specific error cases
-          if (data.action === 'LOGIN_REQUIRED') {
-            // User already exists, redirect to login with invitation context
-            navigate('/login', {
-              state: {
-                returnTo: invitationId
-                  ? `/invitation/${invitationId}`
-                  : returnTo,
-                invitationId: data.invitationId || invitationId,
-                email: formState.email,
-                message: data.message,
-              },
-            })
-            return
-          }
-
-          updateFormState({ error: data.error || 'Registration failed' })
-          return
-        }
-
-        // Store token in localStorage
-        localStorage.setItem('auth_token', data.token)
-
-        // If invitation was auto-accepted, redirect to workspace
-        if (data.invitationAccepted && data.workspaceNumber) {
-          navigate(`/${data.workspaceNumber}`)
-        } else {
-          // Normal registration flow
-          await register(formState.name, formState.email, formState.password)
-        }
-      } else {
-        // Normal registration without invitation
-        await register(formState.name, formState.email, formState.password)
+      if (
+        result.success &&
+        result.invitationAccepted &&
+        result.workspaceNumber
+      ) {
+        navigate(`/${result.workspaceNumber}`)
       }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Registration failed'
+
+      if (
+        errorMessage.includes('User with this email already exists') ||
+        errorMessage.includes('already exists')
+      ) {
+        navigate('/login', {
+          state: {
+            returnTo: invitationId ? `/invitation/${invitationId}` : returnTo,
+            invitationId,
+            email: formState.email,
+            message:
+              'Account already exists. Please sign in to accept the invitation.',
+          },
+        })
+        return
+      }
+
       updateFormState({ error: errorMessage })
     } finally {
       updateFormState({ loading: false })
@@ -142,39 +115,19 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
-      {/* Diagonal Gradient Background - Lower Part */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
-          style={{
-            clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)',
-          }}
+          style={{ clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)' }}
         >
-          {/* Background Decorations */}
           <div className="absolute top-1/2 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full translate-x-48 translate-y-32"></div>
-          <div className="absolute bottom-1/3 left-1/4 w-48 h-48 bg-white bg-opacity-5 rounded-full"></div>
-          <div className="absolute bottom-1/4 right-1/3 w-32 h-32 bg-white bg-opacity-5 rounded-full"></div>
-        </div>
-
-        {/* Mobile diagonal */}
-        <div
-          className="md:hidden absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
-          style={{
-            clipPath:
-              'polygon(65% 47%, 79% 48%, 91% 55%, 100% 63%, 100% 100%, 0 100%, 0 84%, 11% 68%, 24% 55%, 41% 50%)',
-          }}
-        >
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32 translate-y-32"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full translate-x-32 translate-y-32"></div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-            {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-800 mb-2">
                 {invitationId ? 'Join Workspace' : 'Create Account'}
@@ -186,14 +139,12 @@ const Register: React.FC = () => {
               )}
             </div>
 
-            {/* Error Message */}
             {formState.error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
                 {formState.error}
               </div>
             )}
 
-            {/* Form */}
             <div className="space-y-4">
               <div>
                 <label
@@ -278,6 +229,9 @@ const Register: React.FC = () => {
                     )}
                   </button>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Must be at least 8 characters long
+                </p>
               </div>
 
               <button
@@ -306,7 +260,6 @@ const Register: React.FC = () => {
               </button>
             </div>
 
-            {/* Sign In Link */}
             <div className="mt-8 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
@@ -314,11 +267,7 @@ const Register: React.FC = () => {
                   type="button"
                   onClick={() => {
                     navigate('/login', {
-                      state: {
-                        returnTo,
-                        invitationId,
-                        email: prefilledEmail,
-                      },
+                      state: { returnTo, invitationId, email: prefilledEmail },
                     })
                   }}
                   className="text-purple-600 hover:text-purple-800 font-medium transition-colors cursor-pointer"

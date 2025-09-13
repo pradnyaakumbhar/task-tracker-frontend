@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/context/authContext'
-import InvitationPage from '@/components/invitation/InvitationPage'
+import { useAuth } from '../context/authContext'
+import InvitationPage from '../components/invitation/InvitationPage'
 
 const Invitation: React.FC = () => {
   const { invitationId } = useParams<{ invitationId: string }>()
@@ -30,18 +30,15 @@ const Invitation: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     )
   }
 
-  // If no invitation ID or token, redirect to login
+  // If no invitation ID, redirect to login
   if (!invitationId) {
-    return null
-  }
-  if (!token) {
     return null
   }
 
