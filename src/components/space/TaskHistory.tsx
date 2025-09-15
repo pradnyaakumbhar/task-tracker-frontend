@@ -211,9 +211,6 @@ const TaskHistory = ({
             <GitBranch className="w-5 h-5" />
             Task Version History
           </DialogTitle>
-          <DialogDescription>
-            View all changes made to this task
-          </DialogDescription>
         </DialogHeader>
 
         {loading ? (
@@ -268,10 +265,10 @@ const TaskHistory = ({
                       <TableHead className="font-semibold">Priority</TableHead>
                       <TableHead className="font-semibold">Due Date</TableHead>
                       <TableHead className="font-semibold">Tags</TableHead>
+                      <TableHead className="font-semibold">Edited By</TableHead>
                       <TableHead className="font-semibold">
-                        Who Edited
+                        Updated at
                       </TableHead>
-                      <TableHead className="font-semibold">When</TableHead>
                       <TableHead className="w-[100px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>

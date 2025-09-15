@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,13 +10,52 @@ import {
   Plus,
   BarChart3,
   Loader2,
+  AlertCircle,
 } from 'lucide-react'
 import { useWorkspace } from '@/context/workspaceContext'
 import InviteMemberModal from '@/components/workspace/InviteMember'
+import CreateSpaceDialog from '@/components/sidebar/CreateSpaceDialog'
+import { useAuth } from '@/context/authContext'
+
+interface TaskData {
+  id: string
+  title: string
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
+  dueDate: string
+  taskNumber: string
+  spaceName: string
+  spaceNumber: string
+  assignee?: {
+    id: string
+    name: string
+  } | null
+}
+
+interface SpaceProgressData {
+  id: string
+  name: string
+  spaceNumber: string
+  totalTasks: number
+  completedTasks: number
+  inProgressTasks: number
+  todoTasks: number
+  progress: number
+}
+
+interface DashboardData {
+  todayTasks: TaskData[]
+  upcomingTasks: TaskData[]
+  spaceProgress: SpaceProgressData[]
+}
 
 const Workspace: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false)
-
+  const [isCreateSpaceDialogOpen, setIsCreateSpaceDialogOpen] =
+    useState<boolean>(false)
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [dashboardLoading, setDashboardLoading] = useState<boolean>(false)
+  const [dashboardError, setDashboardError] = useState<string | null>(null)
+  const { token } = useAuth()
   const {
     selectedWorkspace,
     workspaceDetails,
@@ -26,7 +65,52 @@ const Workspace: React.FC = () => {
     detailsError,
   } = useWorkspace()
 
-  // calculate number
+  // Fetch dashboard data from backend
+  const fetchDashboardData = async (workspaceId: string) => {
+    setDashboardLoading(true)
+    setDashboardError(null)
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/workspace/dashboardData`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ workspaceId }),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch dashboard data: ${response.statusText}`
+        )
+      }
+
+      const result = await response.json()
+      setDashboardData(result.data)
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      setDashboardError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch dashboard data'
+      )
+    } finally {
+      setDashboardLoading(false)
+    }
+  }
+
+  // Fetch dashboard data when workspace is selected
+  useEffect(() => {
+    if (selectedWorkspace?.id) {
+      fetchDashboardData(selectedWorkspace.id)
+    }
+  }, [selectedWorkspace?.id])
+
+  // Calculate stats with real data
   const stats = React.useMemo(() => {
     if (!workspaceDetails) {
       return [
@@ -42,140 +126,69 @@ const Workspace: React.FC = () => {
       0
     )
 
-    const inProgressTasks = Math.floor(totalTasks * 0.3)
+    // Calculate in-progress tasks from dashboard data
+    const inProgressTasks =
+      dashboardData?.spaceProgress.reduce(
+        (acc, space) => acc + space.inProgressTasks,
+        0
+      ) || Math.floor(totalTasks * 0.3)
 
     return [
       {
         title: 'Total Spaces',
         value: workspaceDetails._count.spaces.toString(),
         icon: BarChart3,
-        change: '+0%',
       },
       {
         title: 'Total Tasks',
         value: totalTasks.toString(),
         icon: CheckCircle2,
-        change: '+0%',
       },
       {
         title: 'In Progress',
         value: inProgressTasks.toString(),
         icon: Clock,
-        change: '+5%',
       },
       {
         title: 'Team Members',
         value: workspaceDetails._count.members.toString(),
         icon: Users,
-        change: '+0%',
       },
     ]
-  }, [workspaceDetails])
+  }, [workspaceDetails, dashboardData])
 
-  // Today's due tasks and upcoming tasks across workspace
-  const workspaceTasks = React.useMemo(() => {
-    if (!workspaceDetails) return { todayTasks: [], upcomingTasks: [] }
+  // Get priority color for tasks
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'text-red-600 bg-red-50'
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50'
+      case 'low':
+        return 'text-green-600 bg-green-50'
+      default:
+        return 'text-gray-600 bg-gray-50'
+    }
+  }
 
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const nextWeek = new Date(today)
-    nextWeek.setDate(nextWeek.getDate() + 7)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
 
-    // Mock tasks from all spaces - you'd get this from your API
-    const allTasks = workspaceDetails.spaces.flatMap((space) => {
-      if (space._count.tasks === 0) return []
-
-      // Generate mock tasks for each space
-      const mockTasks = [
-        {
-          id: `${space.id}-1`,
-          title: 'Complete project setup',
-          priority: 'high' as const,
-          dueDate: new Date(today), // Due today
-          spaceName: space.name,
-          spaceNumber: space.spaceNumber,
-        },
-        {
-          id: `${space.id}-2`,
-          title: 'Review team feedback',
-          priority: 'medium' as const,
-          dueDate: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Due tomorrow
-          spaceName: space.name,
-          spaceNumber: space.spaceNumber,
-        },
-        {
-          id: `${space.id}-3`,
-          title: 'Update documentation',
-          priority: 'high' as const,
-          dueDate: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000), // Due in 2 days
-          spaceName: space.name,
-          spaceNumber: space.spaceNumber,
-        },
-        {
-          id: `${space.id}-4`,
-          title: 'Design new feature',
-          priority: 'low' as const,
-          dueDate: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000), // Due in 5 days
-          spaceName: space.name,
-          spaceNumber: space.spaceNumber,
-        },
-      ]
-
-      // Return random subset of tasks based on space task count
-      return mockTasks.slice(
-        0,
-        Math.min(space._count.tasks, Math.floor(Math.random() * 3) + 1)
-      )
-    })
-
-    // Filter tasks by due date
-    const todayTasks = allTasks.filter((task) => {
-      const taskDate = new Date(task.dueDate)
-      taskDate.setHours(0, 0, 0, 0)
-      return taskDate.getTime() === today.getTime()
-    })
-
-    const upcomingTasks = allTasks
-      .filter((task) => {
-        const taskDate = new Date(task.dueDate)
-        return taskDate > today && taskDate <= nextWeek
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today'
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow'
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
       })
-      .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
-
-    return { todayTasks, upcomingTasks }
-  }, [workspaceDetails])
-
-  // Space-wise progress instead of workspace progress
-  const spaceProgress = React.useMemo(() => {
-    if (!workspaceDetails) return []
-
-    return workspaceDetails.spaces.map((space) => {
-      // Mock data - you'd get actual task status counts from your API
-      const completedTasks = Math.floor(
-        space._count.tasks * (0.4 + Math.random() * 0.5)
-      ) // 40-90% completion
-      const inProgressTasks = Math.floor(
-        (space._count.tasks - completedTasks) * 0.7
-      )
-      const todoTasks = space._count.tasks - completedTasks - inProgressTasks
-
-      const progressPercentage =
-        space._count.tasks > 0
-          ? Math.round((completedTasks / space._count.tasks) * 100)
-          : 0
-
-      return {
-        id: space.id,
-        name: space.name,
-        spaceNumber: space.spaceNumber,
-        totalTasks: space._count.tasks,
-        completedTasks,
-        inProgressTasks,
-        todoTasks,
-        progress: progressPercentage,
-      }
-    })
-  }, [workspaceDetails])
+    }
+  }
 
   const handleInviteMembers = (): void => {
     setIsInviteModalOpen(true)
@@ -183,6 +196,14 @@ const Workspace: React.FC = () => {
 
   const handleCloseInviteModal = (): void => {
     setIsInviteModalOpen(false)
+  }
+
+  const handleCreateSpace = (): void => {
+    setIsCreateSpaceDialogOpen(true)
+  }
+
+  const handleCloseCreateSpaceDialog = (): void => {
+    setIsCreateSpaceDialogOpen(false)
   }
 
   // Loading state
@@ -235,10 +256,6 @@ const Workspace: React.FC = () => {
               "Welcome back! Here's your workspace overview."}
           </p>
         </div>
-        <Button variant="default">
-          <Plus className="h-4 w-4 mr-2" />
-          New Task
-        </Button>
       </div>
 
       {/* Stats Grid */}
@@ -255,10 +272,6 @@ const Workspace: React.FC = () => {
                     {stat.title}
                   </p>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {stat.change}
-                  </p>
                 </div>
                 <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
                   <stat.icon className="h-6 w-6 text-primary" />
@@ -275,14 +288,108 @@ const Workspace: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              {workspaceTasks.todayTasks.length > 0
+              {dashboardData?.todayTasks && dashboardData.todayTasks.length > 0
                 ? 'Due Today'
                 : 'Upcoming Tasks'}
             </CardTitle>
           </CardHeader>
-          {/* need to complete */}
-          <CardContent className="flex items-center justify-center">
-            No tasks are due today
+          <CardContent>
+            {dashboardLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span className="text-muted-foreground">Loading tasks...</span>
+              </div>
+            ) : dashboardError ? (
+              <div className="flex items-center justify-center py-8">
+                <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
+                <span className="text-red-500 text-sm">{dashboardError}</span>
+              </div>
+            ) : dashboardData?.todayTasks &&
+              dashboardData.todayTasks.length > 0 ? (
+              <div className="space-y-3">
+                {dashboardData.todayTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                            task.priority
+                          )}`}
+                        >
+                          {task.priority}
+                        </span>
+                      </div>
+                      <p className="font-medium truncate">{task.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {task.spaceName}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {task.assignee && (
+                        <span className="hidden sm:inline">
+                          {task.assignee.name}
+                        </span>
+                      )}
+                      <span className="font-medium">Today</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : dashboardData?.upcomingTasks &&
+              dashboardData.upcomingTasks.length > 0 ? (
+              <div className="space-y-3">
+                {dashboardData.upcomingTasks.slice(0, 5).map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                            task.priority
+                          )}`}
+                        >
+                          {task.priority}
+                        </span>
+                      </div>
+                      <p className="font-medium truncate">{task.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {task.spaceName}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {task.assignee && (
+                        <span className="hidden sm:inline">
+                          {task.assignee.name}
+                        </span>
+                      )}
+                      <span className="font-medium">
+                        {formatDate(task.dueDate)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {dashboardData.upcomingTasks.length > 5 && (
+                  <p className="text-center text-sm text-muted-foreground mt-3">
+                    +{dashboardData.upcomingTasks.length - 5} more tasks
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-muted-foreground">No tasks due today</p>
+                  <p className="text-sm text-muted-foreground">
+                    Great job staying on top of things!
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -296,8 +403,21 @@ const Workspace: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {spaceProgress.length > 0 ? (
-                spaceProgress.map((space) => (
+              {dashboardLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span className="text-muted-foreground">
+                    Loading progress...
+                  </span>
+                </div>
+              ) : dashboardError ? (
+                <div className="flex items-center justify-center py-8">
+                  <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
+                  <span className="text-red-500 text-sm">{dashboardError}</span>
+                </div>
+              ) : dashboardData?.spaceProgress &&
+                dashboardData.spaceProgress.length > 0 ? (
+                dashboardData.spaceProgress.map((space) => (
                   <div key={space.id} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -397,6 +517,7 @@ const Workspace: React.FC = () => {
             <Button
               variant="outline"
               className="h-auto p-4 flex flex-col items-center gap-2"
+              onClick={handleCreateSpace}
             >
               <Plus className="h-6 w-6" />
               <span>Create Space</span>
@@ -424,6 +545,12 @@ const Workspace: React.FC = () => {
       <InviteMemberModal
         isOpen={isInviteModalOpen}
         onClose={handleCloseInviteModal}
+      />
+
+      {/* Create Space Dialog */}
+      <CreateSpaceDialog
+        open={isCreateSpaceDialogOpen}
+        onOpenChange={setIsCreateSpaceDialogOpen}
       />
     </div>
   )
