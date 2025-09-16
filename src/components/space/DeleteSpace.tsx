@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,22 +7,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Trash2, Loader2 } from "lucide-react";
-import { useAuth } from '@/context/authContext';
+} from '@/components/ui/dialog'
+import { Trash2, Loader2 } from 'lucide-react'
+import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface WorkspaceSpace {
-  id: string;
-  name: string;
-  description?: string | null;
-  spaceNumber: string;
+  id: string
+  name: string
+  description?: string | null
+  spaceNumber: string
 }
 
 interface DeleteSpaceProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  space: WorkspaceSpace | null;
-  onSpaceDeleted: () => void;
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  space: WorkspaceSpace | null
+  onSpaceDeleted: () => void
 }
 
 const DeleteSpace = ({
@@ -31,37 +32,39 @@ const DeleteSpace = ({
   space,
   onSpaceDeleted,
 }: DeleteSpaceProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { token } = useAuth()
   const handleDeleteSpace = async () => {
-    if (!space?.id) return;
-    
-    setIsDeleting(true);
-    setError(null);
-    
+    if (!space?.id) return
+
+    setIsDeleting(true)
+    setError(null)
+
     try {
-      const response = await fetch(`http://localhost:3000/api/space/delete/${space.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
+      const response = await axios.delete(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/space/delete/${space.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete space');
+      )
+      const data = response.data
+      if (!response) {
+        const errorData = await data.error
+        throw new Error(errorData.error || 'Failed to delete space')
       }
-      
-      onSpaceDeleted();
-      onOpenChange(false);
+
+      onSpaceDeleted()
+      onOpenChange(false)
     } catch (err) {
-      console.error('Error deleting space:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete space');
+      console.error('Error deleting space:', err)
+      setError(err instanceof Error ? err.message : 'Failed to delete space')
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -69,21 +72,23 @@ const DeleteSpace = ({
         <DialogHeader>
           <DialogTitle>Delete Space</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete "{space?.name}"? This action cannot be undone and will permanently delete all tasks and data within this space.
+            Are you sure you want to delete "{space?.name}"? This action cannot
+            be undone and will permanently delete all tasks and data within this
+            space.
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             {error}
           </div>
         )}
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={handleDeleteSpace}
             disabled={isDeleting}
@@ -98,7 +103,7 @@ const DeleteSpace = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
 export default DeleteSpace

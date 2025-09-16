@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Plus, Loader2, User } from 'lucide-react'
 import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface User {
   id: string
@@ -100,13 +101,9 @@ const CreateTask = ({
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:3000/api/task/create', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/create`,
+        {
           title: newTask.title.trim(),
           description: newTask.description.trim() || undefined,
           comment: newTask.comment.trim() || undefined,
@@ -115,16 +112,21 @@ const CreateTask = ({
           tags: newTask.tags.filter((tag) => tag.trim() !== ''),
           dueDate: newTask.dueDate || undefined,
           spaceId: spaceId,
-          // Only send assigneeId if it's not "unassigned"
           assigneeId:
             newTask.assigneeId === 'unassigned'
               ? undefined
               : newTask.assigneeId,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      const data = await response.data
+      if (!response) {
+        const errorData = await data.error
         throw new Error(errorData.error || 'Failed to create task')
       }
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -23,11 +22,10 @@ import {
   GitBranch,
   RotateCcw,
   Loader2,
-  ArrowRight,
   Calendar,
-  Eye,
 } from 'lucide-react'
 import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface TaskVersion {
   id: string
@@ -82,18 +80,20 @@ const TaskHistory = ({
 
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/task/versions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ taskId }),
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/versions`,
+        { taskId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      const data = response.data
 
-      if (!response.ok) throw new Error('Failed to load versions')
+      if (!response) throw new Error('Failed to load versions')
 
-      const data = await response.json()
       setVersions(data.versions || [])
     } catch (error) {
       console.error('Error loading versions:', error)
@@ -107,19 +107,18 @@ const TaskHistory = ({
 
     setRevertLoading(true)
     try {
-      const response = await fetch(
-        'http://localhost:3000/api/task/version/revert',
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/version/revert`,
+        { taskId, version },
         {
-          method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ taskId, version }),
         }
       )
 
-      if (!response.ok) throw new Error('Failed to revert task')
+      if (!response) throw new Error('Failed to revert task')
 
       await loadVersions()
       onTaskUpdated?.()
@@ -181,22 +180,6 @@ const TaskHistory = ({
 
   const getPriorityLabel = (priority: string): string => {
     return priority.charAt(0) + priority.slice(1).toLowerCase()
-  }
-
-  const formatValue = (value: any, field: string): string => {
-    if (field === 'tags' && Array.isArray(value)) {
-      return value.length > 0 ? value.join(', ') : 'No tags'
-    }
-    if (field === 'dueDate' && value) {
-      return new Date(value).toLocaleDateString()
-    }
-    return value || 'Not set'
-  }
-
-  const formatFieldName = (field: string): string => {
-    return field
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, (str) => str.toUpperCase())
   }
 
   const isSelected = (version: number) => {
@@ -273,7 +256,7 @@ const TaskHistory = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {versions.map((version, index) => (
+                    {versions.map((version) => (
                       <TableRow
                         key={version.id}
                         className={`cursor-pointer transition-colors ${

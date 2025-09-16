@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -10,22 +10,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Save, Loader2 } from "lucide-react";
-import { useAuth } from '@/context/authContext';
+} from '@/components/ui/dialog'
+import { Save, Loader2 } from 'lucide-react'
+import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface WorkspaceSpace {
-  id: string;
-  name: string;
-  description?: string | null;
-  spaceNumber: string;
+  id: string
+  name: string
+  description?: string | null
+  spaceNumber: string
 }
 
 interface UpdateSpaceProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  space: WorkspaceSpace | null;
-  onSpaceUpdated: () => void;
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  space: WorkspaceSpace | null
+  onSpaceUpdated: () => void
 }
 
 const UpdateSpace = ({
@@ -34,61 +35,63 @@ const UpdateSpace = ({
   space,
   onSpaceUpdated,
 }: UpdateSpaceProps) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: "",
-    description: ""
-  });
-  const { token } = useAuth();
+    name: '',
+    description: '',
+  })
+  const { token } = useAuth()
   // Initialize form when dialog opens or space changes
   useEffect(() => {
     if (isOpen && space) {
       setFormData({
         name: space.name,
-        description: space.description || ""
-      });
-      setError(null);
+        description: space.description || '',
+      })
+      setError(null)
     }
-  }, [isOpen, space]);
+  }, [isOpen, space])
 
   const handleUpdateSpace = async () => {
     if (!space?.id || !formData.name.trim()) {
-      setError("Space name is required");
-      return;
+      setError('Space name is required')
+      return
     }
-    
-    setIsUpdating(true);
-    setError(null);
-    
+
+    setIsUpdating(true)
+    setError(null)
+
     try {
-      const response = await fetch('http://localhost:3000/api/space/update', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await axios.put(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/space/update`,
+        {
           id: space.id,
           name: formData.name.trim(),
-          description: formData.description.trim()
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update space');
+          description: formData.description.trim(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      const data = response.data
+      if (!response) {
+        const errorData = await data.error
+        throw new Error(errorData.error || 'Failed to update space')
       }
-      
-      onSpaceUpdated();
-      onOpenChange(false);
+
+      onSpaceUpdated()
+      onOpenChange(false)
     } catch (err) {
-      console.error('Error updating space:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update space');
+      console.error('Error updating space:', err)
+      setError(err instanceof Error ? err.message : 'Failed to update space')
     } finally {
-      setIsUpdating(false);
+      setIsUpdating(false)
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -99,7 +102,7 @@ const UpdateSpace = ({
             Update the name and description of your space.
           </DialogDescription>
         </DialogHeader>
-        
+
         {error && (
           <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             {error}
@@ -112,28 +115,35 @@ const UpdateSpace = ({
             <Input
               id="spaceName"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Enter space name"
             />
           </div>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="spaceDescription">Description</Label>
             <Textarea
               id="spaceDescription"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="Enter space description (optional)"
               rows={3}
             />
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleUpdateSpace}
             disabled={isUpdating || !formData.name.trim()}
           >
@@ -147,7 +157,7 @@ const UpdateSpace = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
 export default UpdateSpace

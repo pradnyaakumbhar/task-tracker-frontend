@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -8,116 +8,121 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useWorkspace } from "@/context/workspaceContext";
-import { useAuth } from '@/context/authContext';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { useWorkspace } from '@/context/workspaceContext'
+import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface CreatedSpace {
-  id: string;
-  name: string;
-  spaceNumber: string;
-  workspaceNumber: string;
+  id: string
+  name: string
+  spaceNumber: string
+  workspaceNumber: string
 }
 
 interface CreateSpaceDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  workspaceId?: string; 
-  onSpaceCreated?: (space: CreatedSpace) => void; 
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  workspaceId?: string
+  onSpaceCreated?: (space: CreatedSpace) => void
 }
 
-const CreateSpaceDialog = ({ 
-  open, 
-  onOpenChange, 
+const CreateSpaceDialog = ({
+  open,
+  onOpenChange,
   workspaceId,
-  onSpaceCreated 
+  onSpaceCreated,
 }: CreateSpaceDialogProps) => {
-  const navigate = useNavigate();
-  const { selectedWorkspace, refreshWorkspaces, workspaces } = useWorkspace();
-  const { token } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const { selectedWorkspace, refreshWorkspaces, workspaces } = useWorkspace()
+  const { token } = useAuth()
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
-    description: ""
-  });
-  const [error, setError] = useState("");
+    name: '',
+    description: '',
+  })
+  const [error, setError] = useState('')
 
   // Determine which workspace to use
-  const targetWorkspace = workspaceId 
-    ? workspaces.find(w => w.id === workspaceId) || { id: workspaceId, name: "Workspace" }
-    : selectedWorkspace;
+  const targetWorkspace = workspaceId
+    ? workspaces.find((w) => w.id === workspaceId) || {
+        id: workspaceId,
+        name: 'Workspace',
+      }
+    : selectedWorkspace
 
   const handleFormChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }));
-    if (error) setError("");
-  };
+      [field]: value,
+    }))
+    if (error) setError('')
+  }
 
   const handleClose = () => {
-    setFormData({ name: "", description: "" });
-    setError("");
-    onOpenChange(false);
-  };
+    setFormData({ name: '', description: '' })
+    setError('')
+    onOpenChange(false)
+  }
 
   const handleCreateSpace = async () => {
     if (!targetWorkspace || !formData.name.trim()) {
-      setError("Space name is required");
-      return;
+      setError('Space name is required')
+      return
     }
 
-    setLoading(true);
-    setError("");
+    setLoading(true)
+    setError('')
 
     try {
-      const response = await fetch('http://localhost:3000/api/space/create', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/space/create`,
+        {
           workspaceId: targetWorkspace.id,
           name: formData.name.trim(),
-          description: formData.description.trim()
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to create space');
+          description: formData.description.trim(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      const result = await response.data
+      if (!response) {
+        const errorData = await result.error.catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to create space')
       }
 
-      const result = await response.json();
-      
-      setFormData({ name: "", description: "" });
-      onOpenChange(false);
-      
-      await refreshWorkspaces();
-      
+      setFormData({ name: '', description: '' })
+      onOpenChange(false)
+
+      await refreshWorkspaces()
+
       if (onSpaceCreated) {
-        onSpaceCreated(result.space);
+        onSpaceCreated(result.space)
       } else {
-        navigate(`/${result.space.workspaceNumber}/${result.space.spaceNumber}`);
+        navigate(`/${result.space.workspaceNumber}/${result.space.spaceNumber}`)
       }
-      
     } catch (error) {
-      console.error('Error creating space:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create space');
+      console.error('Error creating space:', error)
+      setError(
+        error instanceof Error ? error.message : 'Failed to create space'
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleCreateSpace();
-  };
+    e.preventDefault()
+    handleCreateSpace()
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -125,10 +130,11 @@ const CreateSpaceDialog = ({
         <DialogHeader>
           <DialogTitle>Create New Space</DialogTitle>
           <DialogDescription>
-            Add a new space to {targetWorkspace?.name || "the selected"} workspace.
+            Add a new space to {targetWorkspace?.name || 'the selected'}{' '}
+            workspace.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             {error && (
@@ -136,32 +142,34 @@ const CreateSpaceDialog = ({
                 {error}
               </div>
             )}
-            
+
             <div className="grid gap-2">
               <Label htmlFor="space-name">Name *</Label>
               <Input
                 id="space-name"
                 placeholder="Enter space name"
                 value={formData.name}
-                onChange={(e) => handleFormChange("name", e.target.value)}
+                onChange={(e) => handleFormChange('name', e.target.value)}
                 disabled={loading}
                 required
               />
             </div>
-            
+
             <div className="grid gap-2">
               <Label htmlFor="space-description">Description</Label>
               <Textarea
                 id="space-description"
                 placeholder="Enter space description (optional)"
                 value={formData.description}
-                onChange={(e) => handleFormChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleFormChange('description', e.target.value)
+                }
                 disabled={loading}
                 rows={3}
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button
               type="button"
@@ -171,10 +179,7 @@ const CreateSpaceDialog = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || !formData.name.trim()}
-            >
+            <Button type="submit" disabled={loading || !formData.name.trim()}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Space
             </Button>
@@ -182,7 +187,7 @@ const CreateSpaceDialog = ({
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
-export default CreateSpaceDialog;
+export default CreateSpaceDialog

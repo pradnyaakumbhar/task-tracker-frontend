@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { X, Mail, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useWorkspace } from '@/context/workspaceContext'
 import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface InviteMemberProps {
   isOpen: boolean
@@ -42,25 +43,24 @@ const InviteMember: React.FC<InviteMemberProps> = ({ isOpen, onClose }) => {
     setError('')
 
     try {
-      const response = await fetch(
-        'http://localhost:3000/api/invitation/send',
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/invitation/send`,
         {
-          method: 'POST',
+          email,
+          workspaceId: selectedWorkspace.id,
+          workspaceName: selectedWorkspace.name,
+        },
+        {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            email,
-            workspaceId: selectedWorkspace.id,
-            workspaceName: selectedWorkspace.name,
-          }),
         }
       )
 
-      const data = await response.json()
+      const data = await response.data
 
-      if (!response.ok) {
+      if (!response) {
         setError(data.error || 'Failed to send invitation')
         return
       }

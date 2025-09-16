@@ -13,6 +13,7 @@ import {
   Shield,
   ArrowRight,
 } from 'lucide-react'
+import axios from 'axios'
 
 interface InvitationData {
   id: string
@@ -67,16 +68,18 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
       const headers: HeadersInit = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
 
-      const response = await fetch(
+      const response = await axios.get(
         `${
           import.meta.env.VITE_APP_BASE_URL
         }/api/invitation/join/${invitationId}`,
-        { method: 'GET', headers }
+        {
+          headers,
+        }
       )
 
-      const data = await response.json()
+      const data = await response.data
 
-      if (!response.ok) {
+      if (!response) {
         setError(data.error || 'Failed to process invitation')
         setAction('error')
         return
@@ -114,19 +117,18 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
     setError('')
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_APP_BASE_URL}/api/invitation/accept`,
+        { invitationId },
         {
-          method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ invitationId }),
         }
       )
 
-      const data = await response.json()
+      const data = await response.data
 
       if (!data.success) {
         setError(data.error || 'Failed to accept invitation')

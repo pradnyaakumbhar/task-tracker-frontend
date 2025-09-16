@@ -25,7 +25,7 @@ import {
   RefreshCw,
   X,
   Eye,
-  GitBranch, // Added for version display
+  GitBranch,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -50,6 +50,7 @@ import {
   EditTask,
   TaskHistory,
 } from '@/components/space'
+import axios from 'axios'
 
 interface User {
   id: string
@@ -155,22 +156,22 @@ const Space = () => {
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:3000/api/space/tasks', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          spaceId: currentSpace.id,
-        }),
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/space/tasks`,
+        { spaceId: currentSpace.id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error('Failed to fetch tasks')
       }
 
-      const data = await response.json()
+      const data = await response.data
       setTasks(data.tasks || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -182,22 +183,22 @@ const Space = () => {
   const fetchTaskDetails = async (taskId: string) => {
     setTaskDetailsLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/task/details', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskId: taskId,
-        }),
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/details`,
+        { taskId: taskId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error('Failed to fetch task details')
       }
 
-      const data = await response.json()
+      const data = await response.data
       setSelectedTask(data.task)
     } catch (err) {
       setError(
@@ -224,27 +225,23 @@ const Space = () => {
         tags: updateData.tags,
         assigneeId: updateData.assignee?.id || null,
         reporterId: updateData.reporter?.id,
-        // No updateReason field as requested
       }
 
-      const response = await fetch(
-        `http://localhost:3000/api/task/update/${taskId}`,
+      const response = await axios.put(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/update/${taskId}`,
+        payload,
         {
-          method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload),
         }
       )
-
-      if (!response.ok) {
-        const errorData = await response.json()
+      const data = await response.data
+      if (!response) {
+        const errorData = await data.error
         throw new Error(errorData.error || 'Failed to update task')
       }
-
-      const data = await response.json()
 
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
@@ -268,26 +265,23 @@ const Space = () => {
   const deleteTask = async (taskId: string) => {
     setDeleteLoading(true)
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/task/delete/${taskId}`,
+      const response = await axios.delete(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/delete/${taskId}`,
         {
-          method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }
       )
-
-      if (!response.ok) {
-        const errorData = await response.json()
+      const data = response.data
+      if (!response) {
+        const errorData = await data.error
         throw new Error(errorData.error || 'Failed to delete task')
       }
 
-      // Remove the task from the local state
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId))
 
-      // Close any open dialogs related to this task
       if (selectedTask?.id === taskId) {
         setIsTaskDetailsOpen(false)
         setSelectedTask(null)
@@ -315,19 +309,14 @@ const Space = () => {
     )
   }
 
-  // ==================== EVENT HANDLERS ====================
-
-  // Updated to open task history instead of task details
   const handleViewTask = async (task: Task) => {
     setSelectedTaskForHistory(task.id)
     setIsTaskHistoryOpen(true)
   }
 
-  // New handler for when task is updated from version control
   const handleTaskUpdatedFromHistory = async () => {
-    await fetchTasks() // Refresh the main task list
+    await fetchTasks()
     if (selectedTask) {
-      // Refresh the selected task details if viewing
       await fetchTaskDetails(selectedTask.id)
     }
   }
@@ -342,22 +331,22 @@ const Space = () => {
 
     setTaskDetailsLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/task/details', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskId: task.id,
-        }),
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/details`,
+        { taskId: task.id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error('Failed to fetch task details')
       }
 
-      const data = await response.json()
+      const data = await response.data
       setEditingTask(data.task)
       setIsEditTaskOpen(true)
     } catch (err) {
@@ -407,7 +396,6 @@ const Space = () => {
     await fetchTasks()
   }
 
-  // ==================== UTILITY FUNCTIONS ====================
   const getAvailableMembers = () => {
     if (workspaceDetails?.members) {
       return workspaceDetails.members

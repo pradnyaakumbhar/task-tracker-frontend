@@ -16,6 +16,7 @@ import { useWorkspace } from '@/context/workspaceContext'
 import InviteMemberModal from '@/components/workspace/InviteMember'
 import CreateSpaceDialog from '@/components/sidebar/CreateSpaceDialog'
 import { useAuth } from '@/context/authContext'
+import axios from 'axios'
 
 interface TaskData {
   id: string
@@ -65,31 +66,27 @@ const Workspace: React.FC = () => {
     detailsError,
   } = useWorkspace()
 
-  // Fetch dashboard data from backend
   const fetchDashboardData = async (workspaceId: string) => {
     setDashboardLoading(true)
     setDashboardError(null)
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_APP_BASE_URL}/api/workspace/dashboardData`,
+        { workspaceId },
         {
-          method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ workspaceId }),
         }
       )
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch dashboard data: ${response.statusText}`
-        )
+      if (!response) {
+        throw new Error(`Failed to fetch dashboard data`)
       }
 
-      const result = await response.json()
+      const result = await response.data
       setDashboardData(result.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -402,104 +399,106 @@ const Workspace: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {dashboardLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  <span className="text-muted-foreground">
-                    Loading progress...
-                  </span>
-                </div>
-              ) : dashboardError ? (
-                <div className="flex items-center justify-center py-8">
-                  <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
-                  <span className="text-red-500 text-sm">{dashboardError}</span>
-                </div>
-              ) : dashboardData?.spaceProgress &&
-                dashboardData.spaceProgress.length > 0 ? (
-                dashboardData.spaceProgress.map((space) => (
-                  <div key={space.id} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{space.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          #{space.spaceNumber}
-                        </p>
+            {dashboardLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span className="text-muted-foreground">
+                  Loading progress...
+                </span>
+              </div>
+            ) : dashboardError ? (
+              <div className="flex items-center justify-center py-8">
+                <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
+                <span className="text-red-500 text-sm">{dashboardError}</span>
+              </div>
+            ) : dashboardData?.spaceProgress &&
+              dashboardData.spaceProgress.length > 0 ? (
+              <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <div className="space-y-6 pr-2">
+                  {dashboardData.spaceProgress.map((space) => (
+                    <div key={space.id} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{space.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            #{space.spaceNumber}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {space.progress}% Complete
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {space.completedTasks}/{space.totalTasks} tasks
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          {space.progress}% Complete
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {space.completedTasks}/{space.totalTasks} tasks
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Multi-segment progress bar */}
-                    <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                      <div className="h-full flex">
-                        {/* Completed tasks - green */}
-                        <div
-                          className="bg-green-500 h-full transition-all duration-300"
-                          style={{
-                            width: `${
-                              space.totalTasks > 0
-                                ? (space.completedTasks / space.totalTasks) *
-                                  100
-                                : 0
-                            }%`,
-                          }}
-                        />
-                        {/* In progress tasks - blue */}
-                        <div
-                          className="bg-blue-500 h-full transition-all duration-300"
-                          style={{
-                            width: `${
-                              space.totalTasks > 0
-                                ? (space.inProgressTasks / space.totalTasks) *
-                                  100
-                                : 0
-                            }%`,
-                          }}
-                        />
-                        {/* Todo tasks - gray (remaining space automatically) */}
+                      {/* Multi-segment progress bar */}
+                      <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                        <div className="h-full flex">
+                          {/* Completed tasks - green */}
+                          <div
+                            className="bg-green-500 h-full transition-all duration-300"
+                            style={{
+                              width: `${
+                                space.totalTasks > 0
+                                  ? (space.completedTasks / space.totalTasks) *
+                                    100
+                                  : 0
+                              }%`,
+                            }}
+                          />
+                          {/* In progress tasks - blue */}
+                          <div
+                            className="bg-blue-500 h-full transition-all duration-300"
+                            style={{
+                              width: `${
+                                space.totalTasks > 0
+                                  ? (space.inProgressTasks / space.totalTasks) *
+                                    100
+                                  : 0
+                              }%`,
+                            }}
+                          />
+                          {/* Todo tasks - gray (remaining space automatically) */}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Task breakdown */}
-                    <div className="flex items-center gap-4 text-xs">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-muted-foreground">
-                          {space.completedTasks} completed
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-muted-foreground">
-                          {space.inProgressTasks} in progress
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                        <span className="text-muted-foreground">
-                          {space.todoTasks} todo
-                        </span>
+                      {/* Task breakdown */}
+                      <div className="flex items-center gap-4 text-xs">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-muted-foreground">
+                            {space.completedTasks} completed
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-muted-foreground">
+                            {space.inProgressTasks} in progress
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                          <span className="text-muted-foreground">
+                            {space.todoTasks} todo
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No spaces to track progress</p>
-                  <p className="text-sm">
-                    Create your first space to get started
-                  </p>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No spaces to track progress</p>
+                <p className="text-sm">
+                  Create your first space to get started
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

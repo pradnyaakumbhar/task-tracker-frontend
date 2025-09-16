@@ -74,8 +74,8 @@ const AppSidebar = () => {
     return location.pathname === `/${workspaceNum}`
   }
 
-  const isSpaceActive = (workspaceNum: string, spaceNumber: string) =>
-    workspaceNumber === workspaceNum && spaceNumber === spaceNumber
+  const isSpaceActive = (workspaceNum: string, spaceNum: string) =>
+    workspaceNumber === workspaceNum && spaceNumber === spaceNum
 
   const handleDashboardClick = () => {
     if (selectedWorkspace) {
@@ -207,7 +207,7 @@ const AppSidebar = () => {
         </SidebarHeader>
 
         <SidebarContent className="p-4">
-          {/* Only show Dashboard navigation if workspaces are available */}
+          {/* Dashboard navigation if workspaces are available */}
           {workspaces.length > 0 && (
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
@@ -238,7 +238,7 @@ const AppSidebar = () => {
               </SidebarGroupContent>
             </SidebarGroup>
           )}
-
+          {/* spaces list */}
           {selectedWorkspace && (
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2 flex items-center justify-between">
@@ -293,7 +293,16 @@ const AppSidebar = () => {
                               {!collapsed && (
                                 <div className="flex items-center justify-between w-full">
                                   <span className="truncate">{space.name}</span>
-                                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                                  <span
+                                    className={`text-xs bg-muted px-1.5 py-0.5 rounded ${
+                                      isSpaceActive(
+                                        selectedWorkspace.number,
+                                        space.spaceNumber
+                                      )
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-muted'
+                                    }`}
+                                  >
                                     {space._count.tasks}
                                   </span>
                                 </div>
@@ -321,7 +330,7 @@ const AppSidebar = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <button
-                      className="flex items-center gap-2 w-full"
+                      className="flex items-center gap-2 w-full hover:bg-sidebar-hover"
                       onClick={() => setIsCreateDialogOpen(true)}
                       disabled={!selectedWorkspace}
                     >
@@ -336,7 +345,6 @@ const AppSidebar = () => {
         </SidebarContent>
       </Sidebar>
 
-      {/* Use the reusable CreateSpaceDialog component */}
       <CreateSpaceDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
