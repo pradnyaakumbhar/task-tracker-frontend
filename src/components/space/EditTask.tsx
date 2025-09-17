@@ -118,28 +118,33 @@ const EditTask = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md lg:max-w-2xl max-h-[90vh] overflow-y-auto mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">Edit Task</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Make changes to your task. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         {editingTask && (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-sm font-medium">
+                Title
+              </Label>
               <Input
                 id="title"
                 value={editingTask.title}
                 onChange={(e) =>
                   setEditingTask({ ...editingTask, title: e.target.value })
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-sm font-medium">
+                Description
+              </Label>
               <Textarea
                 id="description"
                 value={editingTask.description || ''}
@@ -149,11 +154,14 @@ const EditTask = ({
                     description: e.target.value,
                   })
                 }
+                className="text-sm sm:text-base resize-none"
               />
             </div>
 
             <div>
-              <Label htmlFor="comment">Comment</Label>
+              <Label htmlFor="comment" className="text-sm font-medium">
+                Comment
+              </Label>
               <Textarea
                 id="comment"
                 value={editingTask.comment || ''}
@@ -161,13 +169,13 @@ const EditTask = ({
                   setEditingTask({ ...editingTask, comment: e.target.value })
                 }
                 placeholder="Add a comment about this task..."
-                className="min-h-[80px]"
+                className="min-h-[80px] text-sm sm:text-base resize-none"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label>Status</Label>
+                <Label className="text-sm font-medium">Status</Label>
                 <Select
                   value={editingTask.status}
                   onValueChange={(
@@ -179,7 +187,7 @@ const EditTask = ({
                       | 'CANCELLED'
                   ) => setEditingTask({ ...editingTask, status: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,14 +200,14 @@ const EditTask = ({
                 </Select>
               </div>
               <div>
-                <Label>Priority</Label>
+                <Label className="text-sm font-medium">Priority</Label>
                 <Select
                   value={editingTask.priority}
                   onValueChange={(
                     value: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
                   ) => setEditingTask({ ...editingTask, priority: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -213,29 +221,36 @@ const EditTask = ({
             </div>
 
             {/* Assignee and Reporter Selection */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label>Assignee</Label>
+                <Label className="text-sm font-medium">Assignee</Label>
                 <Popover open={assigneeOpen} onOpenChange={setAssigneeOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
                       aria-expanded={assigneeOpen}
-                      className="w-full justify-between"
+                      className="w-full justify-between h-9 sm:h-10 text-sm sm:text-base"
                     >
-                      {editingTask.assignee
-                        ? workspaceMembers.find(
-                            (member) => member.id === editingTask.assignee?.id
-                          )?.name
-                        : 'Select assignee...'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      <span className="truncate">
+                        {editingTask.assignee
+                          ? workspaceMembers.find(
+                              (member) => member.id === editingTask.assignee?.id
+                            )?.name
+                          : 'Select assignee...'}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-3 w-3 sm:h-4 sm:w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
+                  <PopoverContent className="w-[200px] sm:w-[250px] p-0">
                     <Command>
-                      <CommandInput placeholder="Search members..." />
-                      <CommandEmpty>No member found.</CommandEmpty>
+                      <CommandInput
+                        placeholder="Search members..."
+                        className="text-sm"
+                      />
+                      <CommandEmpty className="text-sm">
+                        No member found.
+                      </CommandEmpty>
                       <CommandGroup>
                         <CommandItem
                           value=""
@@ -243,10 +258,11 @@ const EditTask = ({
                             setEditingTask({ ...editingTask, assignee: null })
                             setAssigneeOpen(false)
                           }}
+                          className="text-sm"
                         >
                           <Check
                             className={cn(
-                              'mr-2 h-4 w-4',
+                              'mr-2 h-3 w-3 sm:h-4 sm:w-4',
                               !editingTask.assignee
                                 ? 'opacity-100'
                                 : 'opacity-0'
@@ -268,10 +284,11 @@ const EditTask = ({
                               })
                               setAssigneeOpen(false)
                             }}
+                            className="text-sm"
                           >
                             <Check
                               className={cn(
-                                'mr-2 h-4 w-4',
+                                'mr-2 h-3 w-3 sm:h-4 sm:w-4',
                                 editingTask.assignee?.id === member.id
                                   ? 'opacity-100'
                                   : 'opacity-0'
@@ -287,27 +304,34 @@ const EditTask = ({
               </div>
 
               <div>
-                <Label>Reporter</Label>
+                <Label className="text-sm font-medium">Reporter</Label>
                 <Popover open={reporterOpen} onOpenChange={setReporterOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
                       aria-expanded={reporterOpen}
-                      className="w-full justify-between"
+                      className="w-full justify-between h-9 sm:h-10 text-sm sm:text-base"
                     >
-                      {editingTask.reporter
-                        ? workspaceMembers.find(
-                            (member) => member.id === editingTask.reporter?.id
-                          )?.name
-                        : 'Select reporter...'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      <span className="truncate">
+                        {editingTask.reporter
+                          ? workspaceMembers.find(
+                              (member) => member.id === editingTask.reporter?.id
+                            )?.name
+                          : 'Select reporter...'}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-3 w-3 sm:h-4 sm:w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
+                  <PopoverContent className="w-[200px] sm:w-[250px] p-0">
                     <Command>
-                      <CommandInput placeholder="Search members..." />
-                      <CommandEmpty>No member found.</CommandEmpty>
+                      <CommandInput
+                        placeholder="Search members..."
+                        className="text-sm"
+                      />
+                      <CommandEmpty className="text-sm">
+                        No member found.
+                      </CommandEmpty>
                       <CommandGroup>
                         {workspaceMembers.map((member) => (
                           <CommandItem
@@ -324,10 +348,11 @@ const EditTask = ({
                               })
                               setReporterOpen(false)
                             }}
+                            className="text-sm"
                           >
                             <Check
                               className={cn(
-                                'mr-2 h-4 w-4',
+                                'mr-2 h-3 w-3 sm:h-4 sm:w-4',
                                 editingTask.reporter?.id === member.id
                                   ? 'opacity-100'
                                   : 'opacity-0'
@@ -344,7 +369,9 @@ const EditTask = ({
             </div>
 
             <div>
-              <Label htmlFor="dueDate">Due Date</Label>
+              <Label htmlFor="dueDate" className="text-sm font-medium">
+                Due Date
+              </Label>
               <Input
                 id="dueDate"
                 type="date"
@@ -359,11 +386,14 @@ const EditTask = ({
                     dueDate: e.target.value || null,
                   })
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="tags">Tags</Label>
+              <Label htmlFor="tags" className="text-sm font-medium">
+                Tags
+              </Label>
               <Input
                 id="tags"
                 value={editingTask.tags?.join(', ') || ''}
@@ -377,18 +407,27 @@ const EditTask = ({
                   })
                 }
                 placeholder="Enter tags separated by commas"
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
           </div>
         )}
-        <DialogFooter>
-          <Button variant="outline" onClick={() => handleClose(false)}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
+          <Button
+            variant="outline"
+            onClick={() => handleClose(false)}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+          >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                 Updating...
               </>
             ) : (

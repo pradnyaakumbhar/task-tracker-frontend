@@ -42,6 +42,7 @@ const UpdateSpace = ({
     description: '',
   })
   const { token } = useAuth()
+
   // Initialize form when dialog opens or space changes
   useEffect(() => {
     if (isOpen && space) {
@@ -95,23 +96,25 @@ const UpdateSpace = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Update Space</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md lg:max-w-[425px] mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">Update Space</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Update the name and description of your space.
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+          <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-2 sm:p-3 rounded-md">
             {error}
           </div>
         )}
 
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-3 sm:gap-4 py-2 sm:py-4">
           <div className="grid gap-2">
-            <Label htmlFor="spaceName">Name *</Label>
+            <Label htmlFor="spaceName" className="text-sm font-medium">
+              Name *
+            </Label>
             <Input
               id="spaceName"
               value={formData.name}
@@ -119,11 +122,14 @@ const UpdateSpace = ({
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               placeholder="Enter space name"
+              className="h-9 sm:h-10 text-sm sm:text-base"
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="spaceDescription">Description</Label>
+            <Label htmlFor="spaceDescription" className="text-sm font-medium">
+              Description
+            </Label>
             <Textarea
               id="spaceDescription"
               value={formData.description}
@@ -135,22 +141,28 @@ const UpdateSpace = ({
               }
               placeholder="Enter space description (optional)"
               rows={3}
+              className="text-sm sm:text-base resize-none"
             />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+          >
             Cancel
           </Button>
           <Button
             onClick={handleUpdateSpace}
             disabled={isUpdating || !formData.name.trim()}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
           >
             {isUpdating ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             )}
             Update Space
           </Button>

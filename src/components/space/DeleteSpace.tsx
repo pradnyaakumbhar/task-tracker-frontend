@@ -68,10 +68,10 @@ const DeleteSpace = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Delete Space</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md lg:max-w-[425px] mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">Delete Space</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Are you sure you want to delete "{space?.name}"? This action cannot
             be undone and will permanently delete all tasks and data within this
             space.
@@ -79,24 +79,29 @@ const DeleteSpace = ({
         </DialogHeader>
 
         {error && (
-          <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+          <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-2 sm:p-3 rounded-md">
             {error}
           </div>
         )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+          >
             Cancel
           </Button>
           <Button
             variant="destructive"
             onClick={handleDeleteSpace}
             disabled={isDeleting}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
           >
             {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
             ) : (
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             )}
             Delete Space
           </Button>

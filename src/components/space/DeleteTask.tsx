@@ -49,31 +49,37 @@ const DeleteTask = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Task</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md lg:max-w-lg mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">Delete Task</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Are you sure you want to delete "{task?.title}"? This action cannot
             be undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={loading}>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={loading}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+          >
             Cancel
           </Button>
           <Button
             variant="destructive"
             onClick={onConfirmDelete}
             disabled={loading}
+            className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
                 Deleting...
               </>
             ) : (
               <>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                 Delete Task
               </>
             )}

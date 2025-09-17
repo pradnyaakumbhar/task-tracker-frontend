@@ -118,34 +118,36 @@ const Register: React.FC = () => {
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600"
-          style={{ clipPath: 'polygon(0 80%, 100% 50%, 100% 100%, 0% 100%)' }}
+          style={{
+            clipPath: 'polygon(0 70%, 100% 40%, 100% 100%, 0% 100%)',
+          }}
         >
-          <div className="absolute top-1/2 left-0 w-72 h-72 bg-white bg-opacity-10 rounded-full -translate-x-32"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white bg-opacity-10 rounded-full translate-x-48 translate-y-32"></div>
+          <div className="absolute top-1/2 left-0 w-48 h-48 sm:w-72 sm:h-72 bg-white bg-opacity-10 rounded-full -translate-x-24 sm:-translate-x-32"></div>
+          <div className="absolute bottom-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-white bg-opacity-10 rounded-full translate-x-32 translate-y-24 sm:translate-x-48 sm:translate-y-32"></div>
         </div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-3 sm:px-4 py-6 sm:py-8">
+        <div className="w-full max-w-sm sm:max-w-md">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-6 sm:p-8 border border-gray-100">
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">
                 {invitationId ? 'Join Workspace' : 'Create Account'}
               </h1>
               {invitationId && (
-                <p className="text-gray-600 text-sm">
+                <p className="text-gray-600 text-sm sm:text-base">
                   Create your account to join the workspace
                 </p>
               )}
             </div>
 
             {formState.error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <div className="mb-4 p-2 sm:p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs sm:text-sm">
                 {formState.error}
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <label
                   htmlFor="name"
@@ -154,14 +156,14 @@ const Register: React.FC = () => {
                   Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     id="name"
                     type="text"
                     value={formState.name}
                     onChange={(e) => updateFormState({ name: e.target.value })}
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm sm:text-base"
                     placeholder="Enter your name"
                     disabled={formState.loading}
                   />
@@ -176,14 +178,14 @@ const Register: React.FC = () => {
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     id="email"
                     type="email"
                     value={formState.email}
                     onChange={(e) => updateFormState({ email: e.target.value })}
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm sm:text-base"
                     placeholder="Enter your email"
                     disabled={formState.loading || !!prefilledEmail}
                   />
@@ -203,7 +205,7 @@ const Register: React.FC = () => {
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     id="password"
                     type={formState.showPassword ? 'text' : 'password'}
@@ -212,7 +214,7 @@ const Register: React.FC = () => {
                       updateFormState({ password: e.target.value })
                     }
                     onKeyPress={handleKeyPress}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+                    className="w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm sm:text-base"
                     placeholder="Create a password"
                     disabled={formState.loading}
                   />
@@ -223,9 +225,9 @@ const Register: React.FC = () => {
                     disabled={formState.loading}
                   >
                     {formState.showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -238,21 +240,24 @@ const Register: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={formState.loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 group"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 sm:py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center space-x-2 group text-sm sm:text-base"
               >
                 {formState.loading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
                     {invitationId ? (
                       <>
-                        <Users className="w-5 h-5" />
-                        <span>Create Account & Join Workspace</span>
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="hidden sm:inline">
+                          Create Account & Join Workspace
+                        </span>
+                        <span className="sm:hidden">Create & Join</span>
                       </>
                     ) : (
                       <>
                         <span>Create Account</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </>
@@ -260,8 +265,8 @@ const Register: React.FC = () => {
               </button>
             </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-gray-600">
+            <div className="mt-6 sm:mt-8 text-center">
+              <p className="text-gray-600 text-sm sm:text-base">
                 Already have an account?{' '}
                 <button
                   type="button"

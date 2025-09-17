@@ -126,25 +126,29 @@ const CreateSpaceDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create New Space</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">
+            Create New Space
+          </DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Add a new space to {targetWorkspace?.name || 'the selected'}{' '}
             workspace.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-3 sm:gap-4 py-2 sm:py-4">
             {error && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+              <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-2 sm:p-3 rounded">
                 {error}
               </div>
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="space-name">Name *</Label>
+              <Label htmlFor="space-name" className="text-sm font-medium">
+                Name *
+              </Label>
               <Input
                 id="space-name"
                 placeholder="Enter space name"
@@ -152,11 +156,17 @@ const CreateSpaceDialog = ({
                 onChange={(e) => handleFormChange('name', e.target.value)}
                 disabled={loading}
                 required
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="space-description">Description</Label>
+              <Label
+                htmlFor="space-description"
+                className="text-sm font-medium"
+              >
+                Description
+              </Label>
               <Textarea
                 id="space-description"
                 placeholder="Enter space description (optional)"
@@ -166,21 +176,29 @@ const CreateSpaceDialog = ({
                 }
                 disabled={loading}
                 rows={3}
+                className="text-sm sm:text-base resize-none"
               />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={loading}
+              className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !formData.name.trim()}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={loading || !formData.name.trim()}
+              className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+            >
+              {loading && (
+                <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+              )}
               Create Space
             </Button>
           </DialogFooter>

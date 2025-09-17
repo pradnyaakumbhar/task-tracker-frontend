@@ -180,25 +180,29 @@ const CreateWorkspaceDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create New Workspace</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-sm sm:max-w-md mx-auto">
+        <DialogHeader className="space-y-2 sm:space-y-3">
+          <DialogTitle className="text-lg sm:text-xl">
+            Create New Workspace
+          </DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Create a new workspace to organize your projects and collaborate
             with your team.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 sm:gap-4 py-2 sm:py-4">
             {error && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+              <div className="text-xs sm:text-sm text-destructive bg-destructive/10 p-2 sm:p-3 rounded">
                 {error}
               </div>
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="workspace-name">Name *</Label>
+              <Label htmlFor="workspace-name" className="text-sm font-medium">
+                Name *
+              </Label>
               <Input
                 id="workspace-name"
                 placeholder="Enter workspace name"
@@ -206,11 +210,17 @@ const CreateWorkspaceDialog = ({
                 onChange={(e) => handleFormChange('name', e.target.value)}
                 disabled={loading}
                 required
+                className="h-9 sm:h-10 text-sm sm:text-base"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="workspace-description">Description</Label>
+              <Label
+                htmlFor="workspace-description"
+                className="text-sm font-medium"
+              >
+                Description
+              </Label>
               <Textarea
                 id="workspace-description"
                 placeholder="Enter workspace description (optional)"
@@ -220,13 +230,16 @@ const CreateWorkspaceDialog = ({
                 }
                 disabled={loading}
                 rows={3}
+                className="text-sm sm:text-base resize-none"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="member-emails">Team Members</Label>
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <Label htmlFor="member-emails" className="text-sm font-medium">
+                Team Members
+              </Label>
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     id="member-emails"
                     placeholder="Enter email address"
@@ -235,54 +248,74 @@ const CreateWorkspaceDialog = ({
                     onKeyPress={handleEmailInputKeyPress}
                     disabled={loading}
                     type="email"
+                    className="flex-1 h-9 sm:h-10 text-sm sm:text-base"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    size="icon"
+                    size="sm"
                     onClick={addMemberEmail}
                     disabled={loading || !newEmailInput.trim()}
+                    className="w-full sm:w-auto h-9 sm:h-10 text-sm sm:text-base"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-0 sm:mr-2" />
+                    <span className="hidden sm:inline">Add</span>
+                    <span className="sm:hidden">Add Email</span>
                   </Button>
                 </div>
 
                 {formData.memberEmails.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {formData.memberEmails.map((email, index) => (
                       <Badge
                         key={index}
                         variant="secondary"
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 text-xs sm:text-sm max-w-full"
                       >
-                        {email}
+                        <span className="truncate max-w-[150px] sm:max-w-[200px]">
+                          {email}
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeMemberEmail(email)}
                           disabled={loading}
-                          className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                          className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 flex-shrink-0"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         </button>
                       </Badge>
                     ))}
                   </div>
                 )}
+
+                {formData.memberEmails.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {formData.memberEmails.length} member
+                    {formData.memberEmails.length !== 1 ? 's' : ''} added
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={loading}
+              className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !formData.name.trim()}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={loading || !formData.name.trim()}
+              className="w-full sm:w-auto text-sm sm:text-base h-9 sm:h-10"
+            >
+              {loading && (
+                <Loader2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+              )}
               Create Workspace
             </Button>
           </DialogFooter>

@@ -541,10 +541,12 @@ const Space = () => {
   // RENDER CONDITIONS
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex items-center justify-center py-8 sm:py-12">
         <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="text-muted-foreground">Loading tasks...</span>
+          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin" />
+          <span className="text-muted-foreground text-sm sm:text-base">
+            Loading tasks...
+          </span>
         </div>
       </div>
     )
@@ -553,8 +555,10 @@ const Space = () => {
   if (error) {
     return (
       <Card>
-        <CardContent className="p-8 text-center">
-          <div className="text-destructive mb-4">{error}</div>
+        <CardContent className="p-6 sm:p-8 text-center">
+          <div className="text-destructive mb-4 text-sm sm:text-base">
+            {error}
+          </div>
           <Button onClick={fetchTasks} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry
@@ -566,23 +570,33 @@ const Space = () => {
 
   // MAIN RENDER
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* HEADER*/}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold truncate">
             {currentSpace?.name || 'Loading...'}
           </h1>
-          <p className="text-muted-foreground">
-            {currentSpace?.description || ''}
-          </p>
+          {currentSpace?.description && (
+            <p className="text-muted-foreground text-sm sm:text-base mt-1">
+              {currentSpace.description}
+            </p>
+          )}
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => setIsEditDialogOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
             <Edit className="h-4 w-4 mr-2" />
             Update Space
           </Button>
-          <Button variant="outline" onClick={() => setIsDeleteDialogOpen(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete Space
           </Button>
@@ -640,11 +654,11 @@ const Space = () => {
 
       {/*FILTERS */}
       <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
+        <CardContent className="p-3 sm:p-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Search and Clear Filters */}
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="relative flex-1">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
+              <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search tasks, descriptions, and comments..."
@@ -654,7 +668,12 @@ const Space = () => {
                 />
               </div>
               {hasActiveFilters && (
-                <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="w-full sm:w-auto"
+                >
                   <X className="h-4 w-4 mr-2" />
                   Clear All
                 </Button>
@@ -662,7 +681,7 @@ const Space = () => {
             </div>
 
             {/* Filter Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <Filter className="h-4 w-4 mr-2" />
@@ -723,7 +742,7 @@ const Space = () => {
 
             {/* Active Filters Display */}
             {hasActiveFilters && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {searchTerm && (
                   <Badge
                     variant="secondary"
@@ -793,144 +812,155 @@ const Space = () => {
       {/*  TASKS TABLE  */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b bg-muted/50">
-                <TableHead className="font-semibold">Title</TableHead>
-                <TableHead className="font-semibold">Description</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Priority</TableHead>
-                <TableHead className="font-semibold">Assignee</TableHead>
-                <TableHead className="font-semibold">Reporter</TableHead>
-                <TableHead className="font-semibold">Due Date</TableHead>
-                <TableHead className="font-semibold">Tags</TableHead>
-                <TableHead className="font-semibold">Comment</TableHead>
-                <TableHead className="font-semibold">Version</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell className="max-w-[300px] truncate text-muted-foreground">
-                    {task.description}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(task.status)}>
-                      {getStatusLabel(task.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(task.priority)}>
-                      {getPriorityLabel(task.priority)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {task.assignee?.name || 'Unassigned'}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {task.reporter?.name}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {task.dueDate && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {task.tags?.slice(0, 2).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-xs px-1 py-0"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                      {task.tags?.length > 2 && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">
-                          +{task.tags.length - 2}
-                        </Badge>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b bg-muted/50">
+                  <TableHead className="font-semibold">Title</TableHead>
+                  <TableHead className="font-semibold">Description</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Priority</TableHead>
+                  <TableHead className="font-semibold">Assignee</TableHead>
+                  <TableHead className="font-semibold">Reporter</TableHead>
+                  <TableHead className="font-semibold">Due Date</TableHead>
+                  <TableHead className="font-semibold">Tags</TableHead>
+                  <TableHead className="font-semibold">Comment</TableHead>
+                  <TableHead className="font-semibold">Version</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredTasks.map((task) => (
+                  <TableRow key={task.id} className="hover:bg-muted/50">
+                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <TableCell className="max-w-[300px] truncate text-muted-foreground">
+                      {task.description}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(task.status)}>
+                        {getStatusLabel(task.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getPriorityColor(task.priority)}>
+                        {getPriorityLabel(task.priority)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {task.assignee?.name || 'Unassigned'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {task.reporter?.name}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {task.dueDate && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(task.dueDate).toLocaleDateString()}
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-[200px]">
-                    {task.comment ? (
-                      <div className="text-xs bg-muted/50 rounded p-2">
-                        <p className="line-clamp-2 break-words">
-                          {task.comment}
-                        </p>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground italic">
-                        No comment
-                      </span>
-                    )}
-                  </TableCell>
-                  {/* Version column */}
-                  <TableCell className="text-sm">
-                    <div className="flex items-center gap-1">
-                      <GitBranch className="h-3 w-3 text-blue-500" />
-                      <span className="font-mono text-blue-600">
-                        v{task.version || 1}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewTask(task)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View History
-                        </DropdownMenuItem>
-                        {canEditTask(task) && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => handleEditTask(task)}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Task
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={() => handleDeleteTask(task)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Task
-                            </DropdownMenuItem>
-                          </>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {task.tags?.slice(0, 2).map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="outline"
+                            className="text-xs px-1 py-0"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                        {task.tags?.length > 2 && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs px-1 py-0"
+                          >
+                            +{task.tags.length - 2}
+                          </Badge>
                         )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-[200px]">
+                      {task.comment ? (
+                        <div className="text-xs bg-muted/50 rounded p-2">
+                          <p className="line-clamp-2 break-words">
+                            {task.comment}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">
+                          No comment
+                        </span>
+                      )}
+                    </TableCell>
+                    {/* Version column */}
+                    <TableCell className="text-sm">
+                      <div className="flex items-center gap-1">
+                        <GitBranch className="h-3 w-3 text-blue-500" />
+                        <span className="font-mono text-blue-600">
+                          v{task.version || 1}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleViewTask(task)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View History
+                          </DropdownMenuItem>
+                          {canEditTask(task) && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => handleEditTask(task)}
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Task
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleDeleteTask(task)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Task
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {/* Quick Add Task Row */}
+                <TableRow className="border-t-2 border-dashed">
+                  <TableCell colSpan={11}>
+                    <div className="flex items-center gap-2 w-full py-2">
+                      <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span
+                        className="text-muted-foreground cursor-pointer flex-1"
+                        onClick={() => setIsTaskDialogOpen(true)}
+                      >
+                        Click to add a new task...
+                      </span>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))}
-
-              {/* Quick Add Task Row */}
-              <TableRow className="border-t-2 border-dashed">
-                <TableCell colSpan={11}>
-                  <div className="flex items-center gap-2 w-full py-2">
-                    <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span
-                      className="text-muted-foreground cursor-pointer flex-1"
-                      onClick={() => setIsTaskDialogOpen(true)}
-                    >
-                      Click to add a new task...
-                    </span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
@@ -938,12 +968,12 @@ const Space = () => {
       {/* No Results State */}
       {filteredTasks.length === 0 && tasks.length > 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+          <CardContent className="p-8 sm:p-12 text-center">
+            <Settings className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
               No tasks match your filters
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
               Try adjusting your search or filters to see more tasks
             </p>
             <Button variant="outline" onClick={clearAllFilters}>
@@ -957,10 +987,12 @@ const Space = () => {
       {/* No Tasks State */}
       {tasks.length === 0 && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No tasks yet</h3>
-            <p className="text-muted-foreground mb-4">
+          <CardContent className="p-8 sm:p-12 text-center">
+            <Settings className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold mb-2">
+              No tasks yet
+            </h3>
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
               Get started by adding your first task to this space
             </p>
             <Button onClick={() => setIsTaskDialogOpen(true)}>
