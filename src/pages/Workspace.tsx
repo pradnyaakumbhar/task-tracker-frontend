@@ -15,6 +15,7 @@ import {
 import { useWorkspace } from '@/context/workspaceContext'
 import InviteMemberModal from '@/components/workspace/InviteMember'
 import CreateSpaceDialog from '@/components/sidebar/CreateSpaceDialog'
+import TaskAnalytics from '@/components/workspace/TaskAnalytics'
 import { useAuth } from '@/context/authContext'
 import axios from 'axios'
 
@@ -52,6 +53,8 @@ interface DashboardData {
 const Workspace: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState<boolean>(false)
   const [isCreateSpaceDialogOpen, setIsCreateSpaceDialogOpen] =
+    useState<boolean>(false)
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] =
     useState<boolean>(false)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [dashboardLoading, setDashboardLoading] = useState<boolean>(false)
@@ -201,6 +204,14 @@ const Workspace: React.FC = () => {
 
   const handleCloseCreateSpaceDialog = (): void => {
     setIsCreateSpaceDialogOpen(false)
+  }
+
+  const handleViewReports = (): void => {
+    setIsAnalyticsModalOpen(true)
+  }
+
+  const handleCloseAnalyticsModal = (): void => {
+    setIsAnalyticsModalOpen(false)
   }
 
   // Loading state
@@ -554,6 +565,7 @@ const Workspace: React.FC = () => {
             <Button
               variant="outline"
               className="h-auto p-3 sm:p-4 flex flex-col items-center gap-2 text-sm"
+              onClick={handleViewReports}
             >
               <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6" />
               <span>View Reports</span>
@@ -573,6 +585,16 @@ const Workspace: React.FC = () => {
         open={isCreateSpaceDialogOpen}
         onOpenChange={setIsCreateSpaceDialogOpen}
       />
+
+      {/* Task Analytics Modal */}
+      {selectedWorkspace && (
+        <TaskAnalytics
+          isOpen={isAnalyticsModalOpen}
+          onClose={handleCloseAnalyticsModal}
+          workspaceId={selectedWorkspace.id}
+          workspaceName={workspaceDetails.name}
+        />
+      )}
     </div>
   )
 }
