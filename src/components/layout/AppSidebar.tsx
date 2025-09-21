@@ -67,6 +67,7 @@ const AppSidebar = () => {
     setSelectedWorkspace,
   ])
 
+  // after login navigate to /(first workspace) else to /workspacenumber
   const isDashboardActive = (workspaceNum?: string) => {
     if (!workspaceNum) {
       return location.pathname === '/'
@@ -93,7 +94,6 @@ const AppSidebar = () => {
 
   const handleSpaceClick = (workspaceNum: string, spaceNumber: string) => {
     navigate(`/${workspaceNum}/${spaceNumber}`)
-    // Close sidebar on mobile after navigation
     if (isMobile) {
       toggleSidebar()
     }
@@ -104,7 +104,6 @@ const AppSidebar = () => {
 
     setSelectedWorkspace(workspace)
     navigate(`/${workspace.number}`)
-    // Close sidebar on mobile after navigation
     if (isMobile) {
       toggleSidebar()
     }

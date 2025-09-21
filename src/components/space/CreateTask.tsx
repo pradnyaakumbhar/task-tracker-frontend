@@ -63,7 +63,7 @@ const CreateTask = ({
     description: '',
     priority: 'MEDIUM',
     status: 'TODO',
-    assigneeId: 'unassigned', // Changed from empty string to "unassigned"
+    assigneeId: '',
     dueDate: '',
     tags: [],
     comment: '',
@@ -84,13 +84,14 @@ const CreateTask = ({
       description: '',
       priority: 'MEDIUM',
       status: 'TODO',
-      assigneeId: 'unassigned', // Changed from empty string to "unassigned"
+      assigneeId: '',
       dueDate: '',
       tags: [],
       comment: '',
     })
   }
 
+  // create task
   const handleCreateTask = async () => {
     if (!newTask.title.trim() || !spaceId) {
       setError('Title is required')
@@ -238,7 +239,7 @@ const CreateTask = ({
 
           {/* Assignee */}
           <div className="grid gap-2">
-            <Label className="text-sm font-medium">Assignee (Optional)</Label>
+            <Label className="text-sm font-medium">Assignee</Label>
             <Select
               value={newTask.assigneeId}
               onValueChange={(value) =>

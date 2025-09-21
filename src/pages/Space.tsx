@@ -73,7 +73,7 @@ interface Task {
   createdAt: string
   updatedAt: string
   taskNumber?: string
-  version?: number // Added version field
+  version?: number
 }
 
 interface TaskDetails extends Task {
@@ -145,7 +145,20 @@ const Space = () => {
   useEffect(() => {
     fetchTasks()
     if (workspaceDetails?.members) {
-      setWorkspaceMembers(workspaceDetails.members)
+      const members = workspaceDetails.members
+      const owner = workspaceDetails.owner
+      console.log(owner, members)
+
+      const allMembers =
+        owner && !members.some((m) => m.id === owner.id)
+          ? [owner, ...members]
+          : members
+      console.log(allMembers)
+
+      setWorkspaceMembers(allMembers)
+      console.log(workspaceMembers)
+
+      // setWorkspaceMembers(workspaceDetails.members)
     }
   }, [currentSpace?.id, workspaceDetails])
 
@@ -398,7 +411,18 @@ const Space = () => {
 
   const getAvailableMembers = () => {
     if (workspaceDetails?.members) {
-      return workspaceDetails.members
+      const members = workspaceDetails.members
+      const owner = workspaceDetails.owner
+      console.log(owner, members)
+
+      const allMembers =
+        owner && !members.some((m) => m.id === owner.id)
+          ? [owner, ...members]
+          : members
+      console.log(allMembers)
+
+      // return workspaceDetails.members
+      return allMembers
     }
     return []
   }
@@ -480,7 +504,7 @@ const Space = () => {
     setDueDateFilter('all')
   }
 
-  // ==================== COMPUTED FILTERS ====================
+  // filters
   const filteredTasks = tasks.filter((task: Task) => {
     const searchText = searchTerm.toLowerCase()
     const matchesSearch =
@@ -538,7 +562,6 @@ const Space = () => {
     tagFilter !== 'all' ||
     dueDateFilter !== 'all'
 
-  // RENDER CONDITIONS
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8 sm:py-12">
@@ -568,10 +591,9 @@ const Space = () => {
     )
   }
 
-  // MAIN RENDER
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* HEADER*/}
+      {/* header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold truncate">
@@ -603,7 +625,7 @@ const Space = () => {
         </div>
       </div>
 
-      {/* DIALOGS  */}
+      {/* create task */}
       <CreateTask
         isOpen={isTaskDialogOpen}
         onOpenChange={setIsTaskDialogOpen}
@@ -613,6 +635,7 @@ const Space = () => {
         onTaskCreated={handleTaskCreated}
       />
 
+      {/* update task */}
       <UpdateSpace
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -620,6 +643,7 @@ const Space = () => {
         onSpaceUpdated={handleSpaceUpdated}
       />
 
+      {/* delete task */}
       <DeleteSpace
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
@@ -627,7 +651,7 @@ const Space = () => {
         onSpaceDeleted={handleSpaceDeleted}
       />
 
-      {/* VERSION CONTROL TASK HISTORY */}
+      {/* Version control task history*/}
       <TaskHistory
         isOpen={isTaskHistoryOpen}
         onOpenChange={setIsTaskHistoryOpen}
@@ -635,6 +659,7 @@ const Space = () => {
         onTaskUpdated={handleTaskUpdatedFromHistory}
       />
 
+      {/* edit task */}
       <EditTask
         isOpen={isEditTaskOpen}
         onOpenChange={setIsEditTaskOpen}
@@ -644,6 +669,7 @@ const Space = () => {
         loading={updateLoading}
       />
 
+      {/* delete task */}
       <DeleteTask
         isOpen={isDeleteTaskDialogOpen}
         onOpenChange={setIsDeleteTaskDialogOpen}
@@ -652,7 +678,7 @@ const Space = () => {
         loading={deleteLoading}
       />
 
-      {/*FILTERS */}
+      {/* filters */}
       <Card>
         <CardContent className="p-3 sm:p-4">
           <div className="space-y-3 sm:space-y-4">
@@ -964,7 +990,6 @@ const Space = () => {
         </CardContent>
       </Card>
 
-      {/* EMPTY STATES */}
       {/* No Results State */}
       {filteredTasks.length === 0 && tasks.length > 0 && (
         <Card>

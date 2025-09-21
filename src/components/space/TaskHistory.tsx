@@ -74,7 +74,7 @@ const TaskHistory = ({
       loadVersions()
     }
   }, [isOpen, taskId])
-
+  // fetch versions
   const loadVersions = async () => {
     if (!taskId) return
 
@@ -248,7 +248,7 @@ const TaskHistory = ({
               </div>
             )}
 
-            {/* Mobile Card Layout for small screens */}
+            {/* Mobile Card Layout */}
             <div className="block sm:hidden space-y-3">
               {versions.map((version) => (
                 <Card

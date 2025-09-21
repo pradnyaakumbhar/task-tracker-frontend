@@ -72,9 +72,8 @@ const DeleteSpace = ({
         <DialogHeader className="space-y-2 sm:space-y-3">
           <DialogTitle className="text-lg sm:text-xl">Delete Space</DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
-            Are you sure you want to delete "{space?.name}"? This action cannot
-            be undone and will permanently delete all tasks and data within this
-            space.
+            Are you sure you want to delete "{space?.name}"? This will
+            permanently delete all tasks and data within this space.
           </DialogDescription>
         </DialogHeader>
 

@@ -305,16 +305,6 @@ const TaskAnalytics = ({
             </div>
           ) : (
             <>
-              {/* Summary Stats */}
-              {/* <div className="mb-8 text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {analyticsData.totalTasks} Total Tasks
-                </h3>
-                <p className="text-gray-600">
-                  Analytics overview for {workspaceName}
-                </p>
-              </div> */}
-
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Status Distribution - Donut Chart */}

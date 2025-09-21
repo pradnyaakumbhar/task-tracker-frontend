@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Bell, Settings, Plus } from 'lucide-react'
+import { Search, Settings, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -110,7 +110,7 @@ const Topbar = () => {
         </div>
       </header>
 
-      {/* Create Workspace Dialog */}
+      {/* Create Workspace */}
       <CreateWorkspaceDialog
         open={isCreateWorkspaceOpen}
         onOpenChange={setIsCreateWorkspaceOpen}

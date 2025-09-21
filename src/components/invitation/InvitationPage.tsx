@@ -60,6 +60,7 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
     }
   }, [invitationId, token])
 
+  // handle invitation if not registered navigate to /register with invitation id
   const handleInvitationLink = async () => {
     try {
       setAction('loading')
@@ -107,6 +108,7 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
     }
   }
 
+  // accept invitation and navigate to workspace dashboard
   const handleManualAccept = async () => {
     if (!user || !token) {
       setError('Authentication required')
@@ -151,6 +153,7 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
     }
   }
 
+  // navigate to login with invitation id
   const handleLogin = () => {
     if (onShowLogin) {
       onShowLogin()
@@ -165,6 +168,7 @@ const InvitationPage: React.FC<InvitationPageProps> = ({
     }
   }
 
+  // navigate to register with invitation id
   const handleRegister = () => {
     if (onShowRegister) {
       onShowRegister(invitation?.email)

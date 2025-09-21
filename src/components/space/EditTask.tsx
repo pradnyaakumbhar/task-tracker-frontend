@@ -86,7 +86,7 @@ const EditTask = ({
   const [assigneeOpen, setAssigneeOpen] = useState(false)
   const [reporterOpen, setReporterOpen] = useState(false)
 
-  // Update local state when task prop changes
+  // Update local state when task changes
   useEffect(() => {
     setEditingTask(task)
   }, [task])
