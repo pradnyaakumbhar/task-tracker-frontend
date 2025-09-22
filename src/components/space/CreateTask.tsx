@@ -43,6 +43,7 @@ interface NewTaskForm {
   priority: string
   status: string
   assigneeId: string
+  reporterId: string
   dueDate: string
   tags: string[]
   comment: string
@@ -64,6 +65,7 @@ const CreateTask = ({
     priority: 'MEDIUM',
     status: 'TODO',
     assigneeId: '',
+    reporterId: '',
     dueDate: '',
     tags: [],
     comment: '',
@@ -85,6 +87,7 @@ const CreateTask = ({
       priority: 'MEDIUM',
       status: 'TODO',
       assigneeId: '',
+      reporterId: '',
       dueDate: '',
       tags: [],
       comment: '',
@@ -114,9 +117,9 @@ const CreateTask = ({
           dueDate: newTask.dueDate || undefined,
           spaceId: spaceId,
           assigneeId:
-            newTask.assigneeId === 'unassigned'
-              ? undefined
-              : newTask.assigneeId,
+            newTask.assigneeId === '' ? undefined : newTask.assigneeId,
+          reporterId:
+            newTask.reporterId === '' ? undefined : newTask.reporterId,
         },
         {
           headers: {
@@ -248,7 +251,36 @@ const CreateTask = ({
             >
               <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
                 <User className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
-                <SelectValue placeholder="Select assignee (optional)" />
+                <SelectValue placeholder="Select assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {availableMembers.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <span className="font-medium">{member.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({member.email})
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* reporter */}
+          <div className="grid gap-2">
+            <Label className="text-sm font-medium">Reporter</Label>
+            <Select
+              value={newTask.reporterId}
+              onValueChange={(value) =>
+                setNewTask((prev) => ({ ...prev, reporterId: value }))
+              }
+            >
+              <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
+                <User className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                <SelectValue placeholder="Select reporter" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unassigned">Unassigned</SelectItem>
