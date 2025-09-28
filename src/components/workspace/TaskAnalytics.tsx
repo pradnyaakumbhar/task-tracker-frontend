@@ -120,28 +120,11 @@ const TaskAnalytics = ({
       .attr('stroke', '#ffffff')
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
-      .on('mouseover', function (event, d) {
+      .on('mouseover', function () {
         d3.select(this)
           .transition()
           .duration(200)
           .attr('transform', 'scale(1.05)')
-
-        // Show tooltip
-        const tooltip = d3
-          .select('body')
-          .append('div')
-          .attr('class', 'tooltip')
-          .style('position', 'absolute')
-          .style('background', 'rgba(0, 0, 0, 0.8)')
-          .style('color', 'white')
-          .style('padding', '8px')
-          .style('border-radius', '4px')
-          .style('font-size', '12px')
-          .style('pointer-events', 'none')
-          .style('z-index', '1000')
-          .html(`${d.data.label}: ${d.data.value} (${d.data.percentage}%)`)
-          .style('left', event.pageX + 10 + 'px')
-          .style('top', event.pageY - 10 + 'px')
       })
       .on('mouseout', function () {
         d3.select(this).transition().duration(200).attr('transform', 'scale(1)')
@@ -208,24 +191,8 @@ const TaskAnalytics = ({
           priorityColors[d.label as keyof typeof priorityColors] || '#64748b'
       )
       .style('cursor', 'pointer')
-      .on('mouseover', function (event, d) {
+      .on('mouseover', function () {
         d3.select(this).attr('opacity', 0.8)
-
-        const tooltip = d3
-          .select('body')
-          .append('div')
-          .attr('class', 'tooltip')
-          .style('position', 'absolute')
-          .style('background', 'rgba(0, 0, 0, 0.8)')
-          .style('color', 'white')
-          .style('padding', '8px')
-          .style('border-radius', '4px')
-          .style('font-size', '12px')
-          .style('pointer-events', 'none')
-          .style('z-index', '1000')
-          .html(`${d.label}: ${d.value} tasks (${d.percentage}%)`)
-          .style('left', event.pageX + 10 + 'px')
-          .style('top', event.pageY - 10 + 'px')
       })
       .on('mouseout', function () {
         d3.select(this).attr('opacity', 1)

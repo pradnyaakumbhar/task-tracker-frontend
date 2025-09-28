@@ -202,10 +202,6 @@ const Workspace: React.FC = () => {
     setIsCreateSpaceDialogOpen(true)
   }
 
-  const handleCloseCreateSpaceDialog = (): void => {
-    setIsCreateSpaceDialogOpen(false)
-  }
-
   const handleViewReports = (): void => {
     setIsAnalyticsModalOpen(true)
   }

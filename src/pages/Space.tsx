@@ -114,11 +114,9 @@ const Space = () => {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isTaskDetailsOpen, setIsTaskDetailsOpen] = useState(false)
   const [isEditTaskOpen, setIsEditTaskOpen] = useState(false)
   const [selectedTask, setSelectedTask] = useState<TaskDetails | null>(null)
   const [editingTask, setEditingTask] = useState<TaskDetails | null>(null)
-  const [taskDetailsLoading, setTaskDetailsLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
 
   // Version control states
@@ -156,9 +154,6 @@ const Space = () => {
       console.log(allMembers)
 
       setWorkspaceMembers(allMembers)
-      console.log(workspaceMembers)
-
-      // setWorkspaceMembers(workspaceDetails.members)
     }
   }, [currentSpace?.id, workspaceDetails])
 
@@ -194,7 +189,6 @@ const Space = () => {
   }
 
   const fetchTaskDetails = async (taskId: string) => {
-    setTaskDetailsLoading(true)
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_APP_BASE_URL}/api/task/details`,
@@ -217,9 +211,7 @@ const Space = () => {
       setError(
         err instanceof Error ? err.message : 'Failed to fetch task details'
       )
-    } finally {
-      setTaskDetailsLoading(false)
-    }
+    } 
   }
 
   const updateTask = async (
@@ -296,7 +288,6 @@ const Space = () => {
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId))
 
       if (selectedTask?.id === taskId) {
-        setIsTaskDetailsOpen(false)
         setSelectedTask(null)
       }
       if (editingTask?.id === taskId) {
@@ -342,7 +333,6 @@ const Space = () => {
       return
     }
 
-    setTaskDetailsLoading(true)
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_APP_BASE_URL}/api/task/details`,
@@ -366,9 +356,7 @@ const Space = () => {
       setError(
         err instanceof Error ? err.message : 'Failed to fetch task details'
       )
-    } finally {
-      setTaskDetailsLoading(false)
-    }
+    } 
   }
 
   const handleDeleteTask = (task: Task) => {
@@ -419,9 +407,7 @@ const Space = () => {
         owner && !members.some((m) => m.id === owner.id)
           ? [owner, ...members]
           : members
-      console.log(allMembers)
 
-      // return workspaceDetails.members
       return allMembers
     }
     return []
